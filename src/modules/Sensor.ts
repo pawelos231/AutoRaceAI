@@ -17,13 +17,13 @@ export class Sensor {
   }
 
   update() {
+    this.rays = [];
     for (let i = 0; i < this.rayCount; i++) {
       const rayAngle = lerp(
         this.raySpread / 2,
         -this.raySpread / 2,
         i / (this.rayCount - 1)
       );
-      console.log(this.car.y);
       const start = { x: this.car.x, y: this.car.y };
       const end = {
         x: this.car.x - Math.sin(rayAngle) * this.rayLength,
@@ -38,6 +38,7 @@ export class Sensor {
       ctx.beginPath();
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = YELLOW;
+      console.log(this.rays);
       ctx.moveTo(this.rays[i][0].x, this.rays[i][0].y);
       ctx.lineTo(this.rays[i][1].x, this.rays[i][1].y);
       ctx.stroke();
