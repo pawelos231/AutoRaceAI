@@ -12,6 +12,7 @@ export class Car implements CarType {
   friction: number;
   angle: number;
   controls: InputController;
+
   constructor(x: number, y: number, width: number, height: number) {
     this.x = x;
     this.y = y;
@@ -25,7 +26,8 @@ export class Car implements CarType {
 
     this.controls = new InputController();
   }
-  private upDownControlls() {
+
+  private upDownControlls(): void {
     if (this.controls.forward) {
       this.speed += this.acceleration;
     }
@@ -54,9 +56,8 @@ export class Car implements CarType {
     this.x -= Math.sin(this.angle) * this.speed;
     this.y -= Math.cos(this.angle) * this.speed;
   }
-  update() {
-    this.upDownControlls();
 
+  private leftRightControlls() {
     if (this.speed != 0) {
       const flip = this.speed > 0 ? 1 : -1;
       if (this.controls.left) {
@@ -67,7 +68,13 @@ export class Car implements CarType {
       }
     }
   }
-  draw(ctx: CanvasRenderingContext2D) {
+
+  public update(): void {
+    this.upDownControlls();
+    this.leftRightControlls();
+  }
+
+  public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(-this.angle);
