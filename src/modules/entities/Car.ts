@@ -1,5 +1,6 @@
-import { CarType } from "../types/CarType";
-import { InputController } from "../helpers/InputController";
+import { CarType } from "../../types/CarType";
+import { InputController } from "../../helpers/InputController";
+import { Sensor } from "../Sensor";
 
 export class Car implements CarType {
   x: number;
@@ -12,6 +13,7 @@ export class Car implements CarType {
   friction: number;
   angle: number;
   controls: InputController;
+  sensor: Sensor;
 
   constructor(x: number, y: number, width: number, height: number) {
     this.x = x;
@@ -25,6 +27,7 @@ export class Car implements CarType {
     this.angle = 0;
 
     this.controls = new InputController();
+    this.sensor = new Sensor(this);
   }
 
   private upDownControlls(): void {
@@ -72,6 +75,7 @@ export class Car implements CarType {
   public update(): void {
     this.upDownControlls();
     this.leftRightControlls();
+    this.sensor.update();
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
@@ -82,5 +86,7 @@ export class Car implements CarType {
     ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height);
     ctx.fill();
     ctx.restore();
+
+    this.sensor.draw(ctx);
   }
 }

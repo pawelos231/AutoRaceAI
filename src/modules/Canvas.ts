@@ -6,9 +6,9 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
 } from "../constants/DefaultValues/EntitiesDimmensions";
-import { Car } from ".././entities/Car";
+import { Car } from "./entities/Car";
 import { TCanvas } from "../types/CarType";
-import { Road } from "../entities/Road";
+import { Road } from "./entities/Road";
 
 export class Canvas implements TCanvas {
   private ctx: CanvasRenderingContext2D | null = null;
@@ -18,8 +18,13 @@ export class Canvas implements TCanvas {
 
   constructor() {
     this.initCanvas();
-    this.car = new Car(CAR_X_POX, CAR_Y_POS, CAR_WIDTH, CAR_HEIGHT);
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.9);
+    this.car = new Car(
+      this.road.getLaneCenter(1),
+      CAR_Y_POS,
+      CAR_WIDTH,
+      CAR_HEIGHT
+    );
   }
 
   public initCanvas(): void {
@@ -29,15 +34,19 @@ export class Canvas implements TCanvas {
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d");
-    this.car = new Car(CAR_X_POX, CAR_Y_POS, CAR_WIDTH, CAR_HEIGHT);
-    this.car.draw(this.ctx!);
   }
 
   public animate(): void {
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
     this.car.update();
+
+    this.ctx?.save();
+    this.ctx?.translate(0, -this.car.y + this.canvas?.height! * 0.7);
+
     this.road.draw(this.ctx!);
     this.car.draw(this.ctx!);
+
+    this.ctx?.restore();
 
     requestAnimationFrame(this.animate.bind(this));
   }
