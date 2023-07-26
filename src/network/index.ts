@@ -1,6 +1,6 @@
 import { Level } from "./level";
 
-class NeuralNetwork {
+export class NeuralNetwork {
   levels: Level[];
   constructor(neuronCounts: number[]) {
     this.levels = [];

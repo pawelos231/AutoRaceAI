@@ -3,17 +3,19 @@ import { lerp } from "../math/lerp";
 import { YELLOW, BLACK } from "../constants/DefaultValues/colors";
 import { Border } from "../types/RoadTypes";
 import { getIntersection } from "../math/intersections";
+import { Reading } from "../types/SensorTypes";
+import { Positions } from "../types/CommonTypes";
 
 export class Sensor {
   car: Car;
   rayCount: number;
   rayLength: number;
   raySpread: number;
-  rays: any[]; // for now
-  readings: any[];
+  rays: Positions[][]; // for now
+  readings: Reading[];
   constructor(car: Car) {
     this.car = car;
-    this.rayCount = 32;
+    this.rayCount = 10;
     this.rayLength = 250;
     this.raySpread = Math.PI / 2;
     this.rays = [];
@@ -46,7 +48,11 @@ export class Sensor {
     }
   }
 
-  private getReading(ray: any, roadBorders: Border[][], traffic: Car[]) {
+  private getReading(
+    ray: any,
+    roadBorders: Border[][],
+    traffic: Car[]
+  ): Reading {
     let touches = [];
 
     for (let i = 0; i < roadBorders.length; i++) {
@@ -76,9 +82,8 @@ export class Sensor {
       }
     }
 
-    if (touches.length === 0) {
-      return null;
-    } else {
+    if (touches.length === 0) return null;
+    else {
       const offsets = touches.map((e) => e.offset);
       const minOffset = Math.min(...offsets);
       return touches.find((e) => e.offset == minOffset);
@@ -89,7 +94,7 @@ export class Sensor {
     for (let i = 0; i < this.rayCount; i++) {
       let end = this.rays[i][1];
       if (this.readings[i]) {
-        end = this.readings[i];
+        end = this.readings[i]!;
       }
       ctx.beginPath();
       ctx.lineWidth = 1.5;

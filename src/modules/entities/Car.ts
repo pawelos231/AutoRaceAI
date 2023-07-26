@@ -2,9 +2,10 @@ import { CarType, VehicleType } from "../../types/CarTypes";
 import { InputController } from "../../helpers/InputController";
 import { Sensor } from "../Sensor";
 import { Border } from "../../types/RoadTypes";
-import { Posistions } from "../../types/CommonTypes";
+import { Positions } from "../../types/CommonTypes";
 import { polyInstersect } from "../../utility/polyIntersect";
 import { RED, BLACK } from "../../constants/DefaultValues/colors";
+import { NeuralNetwork } from "../../network/index";
 
 export class Car implements CarType {
   x: number;
@@ -17,10 +18,11 @@ export class Car implements CarType {
   friction: number;
   angle: number;
   damaged: boolean;
-  polygon: Posistions[] = [];
+  polygon: Positions[] = [];
   controls: InputController;
   sensor: Sensor | null = null;
   carType: VehicleType;
+  brain: NeuralNetwork | null = null;
 
   constructor(
     x: number,
@@ -45,6 +47,7 @@ export class Car implements CarType {
     this.controls = new InputController(carType);
     if (carType == VehicleType.PLAYER) {
       this.sensor = new Sensor(this);
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
     }
   }
 
@@ -113,11 +116,14 @@ export class Car implements CarType {
     }
     if (this.sensor) {
       this.sensor.update(roadBorders, traffic);
+      const offsets = this.sensor.readings.map((reading) => {
+        return reading == null ? 0 : 1 - reading.offset;
+      });
     }
   }
 
   private createPolygon() {
-    const points: Posistions[] = [];
+    const points: Positions[] = [];
     const rad = Math.hypot(this.width, this.height) / 2;
     const alpha = Math.atan2(this.width, this.height);
     points.push({
