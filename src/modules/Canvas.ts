@@ -38,7 +38,7 @@ export class Canvas implements TCanvas {
 
   public animate(): void {
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    this.car.update();
+    this.car.update(this.road.borders);
 
     this.ctx?.save();
     this.ctx?.translate(0, -this.car.y + this.canvas?.height! * 0.7);

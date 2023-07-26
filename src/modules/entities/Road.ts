@@ -5,11 +5,7 @@ import {
 import { WHITE } from "../../constants/DefaultValues/colors";
 import { lerp } from "../../math/lerp";
 import { DEFAULT_LINE_WIDTH } from "../../constants/DefaultValues/EntitiesDimmensions";
-
-type Border = {
-  x: number;
-  y: number;
-};
+import { Border } from "../../types/RoadTypes";
 
 export class Road {
   x: number;

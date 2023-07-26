@@ -1,6 +1,7 @@
 import { CarType } from "../../types/CarType";
 import { InputController } from "../../helpers/InputController";
 import { Sensor } from "../Sensor";
+import { Border } from "../../types/RoadTypes";
 
 export class Car implements CarType {
   x: number;
@@ -72,10 +73,10 @@ export class Car implements CarType {
     }
   }
 
-  public update(): void {
+  public update(roadBorders: Border[][]): void {
     this.upDownControlls();
     this.leftRightControlls();
-    this.sensor.update();
+    this.sensor.update(roadBorders);
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
