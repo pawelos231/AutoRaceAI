@@ -1,5 +1,10 @@
 import { Border } from "./RoadTypes";
 
+export enum VehicleType {
+  NPC = "NPC",
+  PLAYER = "PLAYER",
+}
+
 export interface CarType {
   draw: (ctx: CanvasRenderingContext2D) => void;
   update: (roadBorders: Border[][]) => void;

@@ -1,16 +1,23 @@
 import { CarControls } from "../constants/controllEnums";
+import { VehicleType } from "../types/CarType";
 export class InputController {
   forward: boolean;
   left: boolean;
   reverse: boolean;
   right: boolean;
 
-  constructor() {
+  constructor(carType: VehicleType) {
     this.forward = false;
     this.left = false;
     this.right = false;
     this.reverse = false;
-    this.addKeyBoardListeners();
+
+    switch (carType) {
+      case VehicleType.NPC:
+        this.forward = true;
+      case VehicleType.PLAYER:
+        this.addKeyBoardListeners();
+    }
   }
 
   private addKeyBoardListeners(): void {

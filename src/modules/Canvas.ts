@@ -7,7 +7,7 @@ import {
   CANVAS_WIDTH,
 } from "../constants/DefaultValues/EntitiesDimmensions";
 import { Car } from "./entities/Car";
-import { TCanvas } from "../types/CarType";
+import { VehicleType, TCanvas } from "../types/CarType";
 import { Road } from "./entities/Road";
 
 export class Canvas implements TCanvas {
@@ -15,6 +15,7 @@ export class Canvas implements TCanvas {
   private canvas: HTMLCanvasElement | null = null;
   private car: Car;
   private road: Road;
+  private traffic: Car[];
 
   constructor() {
     this.initCanvas();
@@ -23,8 +24,12 @@ export class Canvas implements TCanvas {
       this.road.getLaneCenter(1),
       CAR_Y_POS,
       CAR_WIDTH,
-      CAR_HEIGHT
+      CAR_HEIGHT,
+      VehicleType.PLAYER
     );
+    this.traffic = [
+      new Car(this.road.getLaneCenter(1), -100, 30, 50, VehicleType.NPC),
+    ];
   }
 
   public initCanvas(): void {
@@ -37,6 +42,9 @@ export class Canvas implements TCanvas {
   }
 
   public animate(): void {
+    for (let i = 0; i < this.traffic.length; i++) {
+      this.traffic[i].update(this.road.borders);
+    }
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
     this.car.update(this.road.borders);
 
@@ -44,6 +52,9 @@ export class Canvas implements TCanvas {
     this.ctx?.translate(0, -this.car.y + this.canvas?.height! * 0.7);
 
     this.road.draw(this.ctx!);
+    for (const car of this.traffic) {
+      car.draw(this.ctx!);
+    }
     this.car.draw(this.ctx!);
 
     this.ctx?.restore();

@@ -1,7 +1,10 @@
-import { CarType } from "../../types/CarType";
+import { CarType, VehicleType } from "../../types/CarType";
 import { InputController } from "../../helpers/InputController";
 import { Sensor } from "../Sensor";
 import { Border } from "../../types/RoadTypes";
+import { Posistions } from "../../types/CommonTypes";
+import { polyInstersect } from "../../utility/polyIntersect";
+import { RED, BLACK } from "../../constants/DefaultValues/colors";
 
 export class Car implements CarType {
   x: number;
@@ -13,10 +16,18 @@ export class Car implements CarType {
   maxSpeed: number;
   friction: number;
   angle: number;
+  damaged: boolean;
+  polygon: Posistions[] = [];
   controls: InputController;
   sensor: Sensor;
 
-  constructor(x: number, y: number, width: number, height: number) {
+  constructor(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    carType: VehicleType
+  ) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -26,8 +37,9 @@ export class Car implements CarType {
     this.maxSpeed = 3;
     this.friction = 0.05;
     this.angle = 0;
+    this.damaged = false;
 
-    this.controls = new InputController();
+    this.controls = new InputController(carType);
     this.sensor = new Sensor(this);
   }
 
@@ -73,20 +85,61 @@ export class Car implements CarType {
     }
   }
 
+  private assesDamage(roadBorders: Border[][]) {
+    for (let i = 0; i < roadBorders.length; i++) {
+      if (polyInstersect(this.polygon, roadBorders[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public update(roadBorders: Border[][]): void {
-    this.upDownControlls();
-    this.leftRightControlls();
+    if (!this.damaged) {
+      this.upDownControlls();
+      this.leftRightControlls();
+      this.polygon = this.createPolygon();
+      this.damaged = this.assesDamage(roadBorders);
+    }
+
     this.sensor.update(roadBorders);
   }
 
+  private createPolygon() {
+    const points: Posistions[] = [];
+    const rad = Math.hypot(this.width, this.height) / 2;
+    const alpha = Math.atan2(this.width, this.height);
+    points.push({
+      x: this.x - Math.sin(this.angle - alpha) * rad,
+      y: this.y - Math.cos(this.angle - alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(this.angle + alpha) * rad,
+      y: this.y - Math.cos(this.angle + alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad,
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
+    });
+    return points;
+  }
+
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(-this.angle);
     ctx.beginPath();
-    ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height);
+    if (this.damaged) {
+      ctx.fillStyle = RED;
+    } else {
+      ctx.fillStyle = BLACK;
+    }
+    ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
+    for (let i = 1; i < this.polygon.length; i++) {
+      ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
+    }
     ctx.fill();
-    ctx.restore();
 
     this.sensor.draw(ctx);
   }
