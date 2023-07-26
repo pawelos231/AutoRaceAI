@@ -1,4 +1,4 @@
-import { CarType, VehicleType } from "../../types/CarType";
+import { CarType, VehicleType } from "../../types/CarTypes";
 import { InputController } from "../../helpers/InputController";
 import { Sensor } from "../Sensor";
 import { Border } from "../../types/RoadTypes";
@@ -19,14 +19,16 @@ export class Car implements CarType {
   damaged: boolean;
   polygon: Posistions[] = [];
   controls: InputController;
-  sensor: Sensor;
+  sensor: Sensor | null = null;
+  carType: VehicleType;
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
-    carType: VehicleType
+    carType: VehicleType,
+    maxSpeed = 3
   ) {
     this.x = x;
     this.y = y;
@@ -34,13 +36,16 @@ export class Car implements CarType {
     this.height = height;
     this.speed = 0;
     this.acceleration = 0.2;
-    this.maxSpeed = 3;
+    this.maxSpeed = maxSpeed;
     this.friction = 0.05;
     this.angle = 0;
     this.damaged = false;
+    this.carType = carType;
 
     this.controls = new InputController(carType);
-    this.sensor = new Sensor(this);
+    if (carType == VehicleType.PLAYER) {
+      this.sensor = new Sensor(this);
+    }
   }
 
   private upDownControlls(): void {
@@ -85,24 +90,30 @@ export class Car implements CarType {
     }
   }
 
-  private assesDamage(roadBorders: Border[][]) {
+  private assesDamage(roadBorders: Border[][], traffic: Car[]) {
     for (let i = 0; i < roadBorders.length; i++) {
       if (polyInstersect(this.polygon, roadBorders[i])) {
+        return true;
+      }
+    }
+    for (let i = 0; i < traffic.length; i++) {
+      if (polyInstersect(this.polygon, traffic[i].polygon)) {
         return true;
       }
     }
     return false;
   }
 
-  public update(roadBorders: Border[][]): void {
+  public update(roadBorders: Border[][], traffic: Car[]): void {
     if (!this.damaged) {
       this.upDownControlls();
       this.leftRightControlls();
       this.polygon = this.createPolygon();
-      this.damaged = this.assesDamage(roadBorders);
+      this.damaged = this.assesDamage(roadBorders, traffic);
     }
-
-    this.sensor.update(roadBorders);
+    if (this.sensor) {
+      this.sensor.update(roadBorders, traffic);
+    }
   }
 
   private createPolygon() {
@@ -128,19 +139,20 @@ export class Car implements CarType {
     return points;
   }
 
-  public draw(ctx: CanvasRenderingContext2D): void {
+  public draw(ctx: CanvasRenderingContext2D, color: string): void {
     ctx.beginPath();
     if (this.damaged) {
       ctx.fillStyle = RED;
     } else {
-      ctx.fillStyle = BLACK;
+      ctx.fillStyle = color;
     }
     ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
     for (let i = 1; i < this.polygon.length; i++) {
       ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
     }
     ctx.fill();
-
-    this.sensor.draw(ctx);
+    if (this.sensor) {
+      this.sensor.draw(ctx);
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { CarControls } from "../constants/controllEnums";
-import { VehicleType } from "../types/CarType";
+import { VehicleType } from "../types/CarTypes";
 export class InputController {
   forward: boolean;
   left: boolean;
@@ -15,7 +15,11 @@ export class InputController {
     switch (carType) {
       case VehicleType.NPC:
         this.forward = true;
+        break;
       case VehicleType.PLAYER:
+        this.addKeyBoardListeners();
+        break;
+      default:
         this.addKeyBoardListeners();
     }
   }

@@ -7,8 +7,9 @@ import {
   CANVAS_WIDTH,
 } from "../constants/DefaultValues/EntitiesDimmensions";
 import { Car } from "./entities/Car";
-import { VehicleType, TCanvas } from "../types/CarType";
+import { VehicleType, TCanvas, VehicleSpeed } from "../types/CarTypes";
 import { Road } from "./entities/Road";
+import { BLACK } from "../constants/DefaultValues/colors";
 
 export class Canvas implements TCanvas {
   private ctx: CanvasRenderingContext2D | null = null;
@@ -25,10 +26,18 @@ export class Canvas implements TCanvas {
       CAR_Y_POS,
       CAR_WIDTH,
       CAR_HEIGHT,
-      VehicleType.PLAYER
+      VehicleType.PLAYER,
+      VehicleSpeed.AVERAGE
     );
     this.traffic = [
-      new Car(this.road.getLaneCenter(1), -100, 30, 50, VehicleType.NPC),
+      new Car(
+        this.road.getLaneCenter(1),
+        -100,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
     ];
   }
 
@@ -43,19 +52,21 @@ export class Canvas implements TCanvas {
 
   public animate(): void {
     for (let i = 0; i < this.traffic.length; i++) {
-      this.traffic[i].update(this.road.borders);
+      this.traffic[i].update(this.road.borders, []);
     }
+
+    this.car.update(this.road.borders, this.traffic);
+
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    this.car.update(this.road.borders);
 
     this.ctx?.save();
     this.ctx?.translate(0, -this.car.y + this.canvas?.height! * 0.7);
 
     this.road.draw(this.ctx!);
     for (const car of this.traffic) {
-      car.draw(this.ctx!);
+      car.draw(this.ctx!, "blue");
     }
-    this.car.draw(this.ctx!);
+    this.car.draw(this.ctx!, BLACK);
 
     this.ctx?.restore();
 
