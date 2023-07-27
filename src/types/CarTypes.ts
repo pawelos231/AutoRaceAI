@@ -2,8 +2,15 @@ import { Border } from "./RoadTypes";
 import { Car } from "../modules/entities/Car";
 
 export enum VehicleType {
+  AI = "AI",
   NPC = "NPC",
   PLAYER = "PLAYER",
+}
+
+export enum VehicleSprite {
+  NORMAL = "NORMAL",
+  TRUCK = "TRUCK",
+  MOTOR = "MOTOR",
 }
 
 export enum VehicleSpeed {
@@ -16,9 +23,4 @@ export enum VehicleSpeed {
 export interface CarType {
   draw: (ctx: CanvasRenderingContext2D, color: string) => void;
   update: (roadBorders: Border[][], traffic: Car[]) => void;
-}
-
-export interface TCanvas {
-  initCanvas: () => void;
-  animate: () => void;
 }

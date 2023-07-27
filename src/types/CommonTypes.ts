@@ -3,3 +3,7 @@ export type Positions = {
   y: number;
 };
 
+export interface TCanvas {
+  initCanvas: () => void;
+  animate: () => void;
+}

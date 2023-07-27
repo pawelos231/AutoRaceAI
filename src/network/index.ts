@@ -9,7 +9,7 @@ export class NeuralNetwork {
     }
   }
 
-  static feedForward(givenInputs: any, network: NeuralNetwork): number[] {
+  static feedForward(givenInputs: number[], network: NeuralNetwork): number[] {
     let outputs = Level.feedForward(givenInputs, network.levels[0]);
     for (let i = 1; i < network.levels.length; i++) {
       outputs = Level.feedForward(outputs, network.levels[i]);

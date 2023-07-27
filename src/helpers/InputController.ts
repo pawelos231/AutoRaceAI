@@ -1,5 +1,7 @@
 import { CarControls } from "../constants/controllEnums";
 import { VehicleType } from "../types/CarTypes";
+
+
 export class InputController {
   forward: boolean;
   left: boolean;

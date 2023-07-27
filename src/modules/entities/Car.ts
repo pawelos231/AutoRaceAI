@@ -4,7 +4,7 @@ import { Sensor } from "../Sensor";
 import { Border } from "../../types/RoadTypes";
 import { Positions } from "../../types/CommonTypes";
 import { polyInstersect } from "../../utility/polyIntersect";
-import { RED, BLACK } from "../../constants/DefaultValues/colors";
+import { RED } from "../../constants/DefaultValues/colors";
 import { NeuralNetwork } from "../../network/index";
 
 export class Car implements CarType {
@@ -23,13 +23,14 @@ export class Car implements CarType {
   sensor: Sensor | null = null;
   carType: VehicleType;
   brain: NeuralNetwork | null = null;
+  useBrain: any;
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
-    carType: VehicleType,
+    vehicleType: VehicleType,
     maxSpeed = 3
   ) {
     this.x = x;
@@ -42,10 +43,12 @@ export class Car implements CarType {
     this.friction = 0.05;
     this.angle = 0;
     this.damaged = false;
-    this.carType = carType;
+    this.carType = vehicleType;
 
-    this.controls = new InputController(carType);
-    if (carType == VehicleType.PLAYER) {
+    this.useBrain = vehicleType == VehicleType.AI;
+
+    this.controls = new InputController(vehicleType);
+    if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor(this);
       this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
     }
@@ -116,9 +119,18 @@ export class Car implements CarType {
     }
     if (this.sensor) {
       this.sensor.update(roadBorders, traffic);
+
       const offsets = this.sensor.readings.map((reading) => {
         return reading == null ? 0 : 1 - reading.offset;
       });
+      const outputs = NeuralNetwork.feedForward(offsets, this.brain!);
+      console.log(outputs);
+      if (this.useBrain) {
+        this.controls.forward = Boolean(outputs[0]);
+        this.controls.left = Boolean(outputs[1]);
+        this.controls.right = Boolean(outputs[2]);
+        this.controls.reverse = Boolean(outputs[3]);
+      }
     }
   }
 

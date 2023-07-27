@@ -20,14 +20,14 @@ export class Level {
         level.weights[i][j] = Math.random() * 2 - 1;
       }
     }
-    for (let i = 0; i < level.inputs.length; i++) {
-      for (let j = 0; j < level.outputs.length; j++) {
-        level.weights[i][j] = Math.random() * 2 - 1;
-      }
+
+    for (let i = 0; i < level.biases.length; i++) {
+      level.biases[i] = Math.random() * 2 - 1;
     }
   }
 
-  public static feedForward(givenInputs: any, level: Level) {
+  public static feedForward(givenInputs: number[], level: Level) {
+    
     for (let i = 0; i < level.inputs.length; i++) {
       level.inputs[i] = givenInputs[i];
     }
@@ -43,6 +43,7 @@ export class Level {
         level.outputs[i] = 0;
       }
     }
+    
     return level.outputs;
   }
 }
