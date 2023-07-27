@@ -10,6 +10,9 @@ body {
     height: 100vh;
 }
 
-#canvas {
+#carCanvas {
     background-color: #333;
+}
+#neuralNetworkCanvas{
+    background-color: black;
 }

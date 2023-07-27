@@ -6,15 +6,16 @@ import { getIntersection } from "../math/intersections";
 import { Reading } from "../types/SensorTypes";
 import { Positions } from "../types/CommonTypes";
 
-const DEFAULT_RAY_COUNT = 4;
+const DEFAULT_RAY_COUNT = 5;
 
 export class Sensor {
   car: Car;
   rayCount: number;
   rayLength: number;
   raySpread: number;
-  rays: Positions[][]; // for now
+  rays: Positions[][];
   readings: Reading[];
+
   constructor(car: Car, rayCount: number = DEFAULT_RAY_COUNT) {
     this.car = car;
     this.rayCount = rayCount;
@@ -24,7 +25,7 @@ export class Sensor {
     this.readings = [];
   }
 
-  private castRays() {
+  private castRays(): void {
     this.rays = [];
     for (let i = 0; i < this.rayCount; i++) {
       const rayAngle =

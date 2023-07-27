@@ -1,7 +1,6 @@
 import {
   CAR_HEIGHT,
   CAR_WIDTH,
-  CAR_X_POX,
   CAR_Y_POS,
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -11,16 +10,21 @@ import { VehicleType, VehicleSpeed } from "../types/CarTypes";
 import { TCanvas } from "../types/CommonTypes";
 import { Road } from "./entities/Road";
 import { BLACK, BLUE } from "../constants/DefaultValues/colors";
+import { Common } from "./Common";
+import { CAR_CANVAS_ID } from "../constants/classNames";
 
-export class Canvas implements TCanvas {
+export class CarCanvas extends Common<false> implements TCanvas {
+  private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null = null;
-  private canvas: HTMLCanvasElement | null = null;
   private car: Car;
   private road: Road;
   private traffic: Car[];
 
   constructor() {
+    super();
+    this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
+
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.5);
     this.car = new Car(
       this.road.getLaneCenter(1),
@@ -43,9 +47,6 @@ export class Canvas implements TCanvas {
   }
 
   public initCanvas(): void {
-    this.canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
-    if (!this.canvas) return;
-
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d");
