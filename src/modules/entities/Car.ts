@@ -156,7 +156,11 @@ export class Car implements CarType {
     return points;
   }
 
-  public draw(ctx: CanvasRenderingContext2D, color: string): void {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    color: string,
+    drawSensor: boolean = false
+  ): void {
     ctx.beginPath();
     if (this.damaged) {
       ctx.fillStyle = RED;
@@ -168,7 +172,7 @@ export class Car implements CarType {
       ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
     }
     ctx.fill();
-    if (this.sensor) {
+    if (this.sensor && drawSensor) {
       this.sensor.draw(ctx);
     }
   }

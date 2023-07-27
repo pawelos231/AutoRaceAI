@@ -16,24 +16,23 @@ import { CAR_CANVAS_ID } from "../constants/classNames";
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null = null;
-  private car: Car;
+  private cars: Car[];
   private road: Road;
   private traffic: Car[];
+  private bestCar: Car | null = null;
 
   constructor() {
     super();
+
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
 
+    if (localStorage.getItem("bestBrain")) {
+      this.bestCar = JSON.parse(localStorage.getItem("bestBrain")!);
+    }
+
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.5);
-    this.car = new Car(
-      this.road.getLaneCenter(1),
-      CAR_Y_POS,
-      CAR_WIDTH,
-      CAR_HEIGHT,
-      VehicleType.AI,
-      VehicleSpeed.AVERAGE
-    );
+    this.cars = this.generateCars(500);
     this.traffic = [
       new Car(
         this.road.getLaneCenter(1),
@@ -57,21 +56,58 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.traffic[i].update(this.road.borders, []);
     }
 
-    this.car.update(this.road.borders, this.traffic);
+    for (const car of this.cars) {
+      car.update(this.road.borders, this.traffic);
+    }
+    this.bestCar = this.cars.find((car) => {
+      return car.y == Math.min(...this.cars.map((c) => c.y));
+    })!;
 
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     this.ctx?.save();
-    this.ctx?.translate(0, -this.car.y + this.canvas?.height! * 0.7);
+    this.ctx?.translate(0, -this.bestCar.y + this.canvas?.height! * 0.7);
 
     this.road.draw(this.ctx!);
     for (const car of this.traffic) {
       car.draw(this.ctx!, BLUE);
     }
-    this.car.draw(this.ctx!, BLACK);
+
+    this.ctx!.globalAlpha = 0.2;
+
+    for (const car of this.cars) {
+      car.draw(this.ctx!, BLACK);
+    }
+    this.ctx!.globalAlpha = 1;
+    this.bestCar.draw(this.ctx!, BLACK, true);
 
     this.ctx?.restore();
 
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  private generateCars(N: number): Car[] {
+    const cars = [];
+    for (let i = 1; i <= N; i++) {
+      cars.push(
+        new Car(
+          this.road.getLaneCenter(1),
+          CAR_Y_POS,
+          CAR_WIDTH,
+          CAR_HEIGHT,
+          VehicleType.AI,
+          VehicleSpeed.AVERAGE
+        )
+      );
+    }
+    return cars;
+  }
+
+  private save() {
+    localStorage.setItem("bestBrain", JSON.stringify(this.bestCar!));
+  }
+
+  private discard() {
+    localStorage.removeItem("bestBrain");
   }
 }
