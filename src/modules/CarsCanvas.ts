@@ -12,6 +12,7 @@ import { Road } from "./entities/Road";
 import { BLACK, BLUE } from "../constants/DefaultValues/colors";
 import { Common } from "./Common";
 import { CAR_CANVAS_ID } from "../constants/classNames";
+import { NeuralNetwork } from "../network/index";
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -27,16 +28,38 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
 
-    if (localStorage.getItem("bestBrain")) {
-      this.bestCar = JSON.parse(localStorage.getItem("bestBrain")!);
-    }
-
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.5);
     this.cars = this.generateCars(500);
+
+    if (localStorage.getItem("bestBrain")) {
+      for (let i = 0; i < this.cars.length; i++) {
+        this.cars[i] = JSON.parse(localStorage.getItem("bestBrain")!);
+        if (i != 0) {
+          NeuralNetwork.mutate(this.cars[i].brain!, 0.12);
+        }
+      }
+    }
+
     this.traffic = [
       new Car(
         this.road.getLaneCenter(1),
         -100,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
+      new Car(
+        this.road.getLaneCenter(0),
+        -300,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
+      new Car(
+        this.road.getLaneCenter(2),
+        -300,
         30,
         50,
         VehicleType.NPC,
