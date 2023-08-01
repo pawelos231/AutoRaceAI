@@ -111,6 +111,7 @@ export class Car implements CarType {
   }
 
   public update(roadBorders: Border[][], traffic: Car[]): void {
+    console.log("hahalo");
     if (!this.damaged) {
       this.upDownControlls();
       this.leftRightControlls();

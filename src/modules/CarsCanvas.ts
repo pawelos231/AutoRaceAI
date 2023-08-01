@@ -17,9 +17,9 @@ import { NeuralNetwork } from "../network/index";
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null = null;
-  private cars: Car[];
   private road: Road;
   private traffic: Car[];
+  private cars: Car[];
   private bestCar: Car | null = null;
 
   constructor() {
@@ -31,6 +31,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.5);
     this.cars = this.generateCars(500);
 
+    /*
     if (localStorage.getItem("bestBrain")) {
       for (let i = 0; i < this.cars.length; i++) {
         this.cars[i] = JSON.parse(localStorage.getItem("bestBrain")!);
@@ -39,6 +40,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
         }
       }
     }
+  */
 
     this.traffic = [
       new Car(
@@ -79,9 +81,10 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.traffic[i].update(this.road.borders, []);
     }
 
-    for (const car of this.cars) {
-      car.update(this.road.borders, this.traffic);
+    for (let i = 0; i < this.cars.length; i++) {
+      this.cars[i].update(this.road.borders, this.traffic);
     }
+
     this.bestCar = this.cars.find((car) => {
       return car.y == Math.min(...this.cars.map((c) => c.y));
     })!;
