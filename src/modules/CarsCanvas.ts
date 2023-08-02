@@ -31,14 +31,14 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.initCanvas();
     this.save();
     this.traffic = [];
-    this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.7);
+    this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.9);
     this.cars = this.generateCars(300);
 
     if (localStorage.getItem(BEST_CAR_LOCAL)) {
       for (let i = 0; i < this.cars.length; i++) {
         this.cars[i].brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
         if (i > 0) {
-          NeuralNetwork.mutate(this.cars[i].brain!, 0.3);
+          NeuralNetwork.mutate(this.cars[i].brain!, 0.2);
         }
       }
     }
@@ -109,10 +109,6 @@ export class CarCanvas extends Common<false> implements TCanvas {
     save.addEventListener("click", () => {
       localStorage.setItem(BEST_CAR_LOCAL, JSON.stringify(this.bestCar!.brain));
     });
-  }
-
-  private discard() {
-    localStorage.removeItem("bestBrain");
   }
 
   private generateRandomTraffic(numberOfCarsToGenerate: number) {
