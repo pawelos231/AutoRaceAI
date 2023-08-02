@@ -27,10 +27,7 @@ export class Level {
   }
 
   public static feedForward(givenInputs: number[], level: Level) {
-    
-    for (let i = 0; i < level.inputs.length; i++) {
-      level.inputs[i] = givenInputs[i];
-    }
+    level.inputs = [...givenInputs];
 
     for (let i = 0; i < level.outputs.length; i++) {
       let sum = 0;
@@ -43,7 +40,7 @@ export class Level {
         level.outputs[i] = 0;
       }
     }
-    
+
     return level.outputs;
   }
 }

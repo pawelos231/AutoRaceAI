@@ -13,6 +13,7 @@ import { BLACK, BLUE } from "../constants/DefaultValues/colors";
 import { Common } from "./Common";
 import { CAR_CANVAS_ID } from "../constants/classNames";
 import { NeuralNetwork } from "../network/index";
+import { BEST_CAR_LOCAL } from "../constants/classNames";
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -27,20 +28,19 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
+    this.save();
 
-    this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.5);
-    this.cars = this.generateCars(500);
+    this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.7);
+    this.cars = this.generateCars(1000);
 
-    /*
-    if (localStorage.getItem("bestBrain")) {
+    if (localStorage.getItem(BEST_CAR_LOCAL)) {
       for (let i = 0; i < this.cars.length; i++) {
-        this.cars[i] = JSON.parse(localStorage.getItem("bestBrain")!);
-        if (i != 0) {
-          NeuralNetwork.mutate(this.cars[i].brain!, 0.12);
+        this.cars[i].brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
+        if (i > 0) {
+          NeuralNetwork.mutate(this.cars[i].brain!, 0.5);
         }
       }
     }
-  */
 
     this.traffic = [
       new Car(
@@ -62,6 +62,30 @@ export class CarCanvas extends Common<false> implements TCanvas {
       new Car(
         this.road.getLaneCenter(2),
         -300,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
+      new Car(
+        this.road.getLaneCenter(0),
+        -700,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
+      new Car(
+        this.road.getLaneCenter(1),
+        -600,
+        30,
+        50,
+        VehicleType.NPC,
+        VehicleSpeed.SLOW
+      ),
+      new Car(
+        this.road.getLaneCenter(1),
+        -900,
         30,
         50,
         VehicleType.NPC,
@@ -130,10 +154,15 @@ export class CarCanvas extends Common<false> implements TCanvas {
   }
 
   private save() {
-    localStorage.setItem("bestBrain", JSON.stringify(this.bestCar!));
+    let save = this.bindElementByClass("save");
+    save.addEventListener("click", () => {
+      localStorage.setItem(BEST_CAR_LOCAL, JSON.stringify(this.bestCar!.brain));
+    });
   }
 
   private discard() {
     localStorage.removeItem("bestBrain");
   }
+
+  private generateRandomTraffic(numberOfCarsToGenerate) {}
 }

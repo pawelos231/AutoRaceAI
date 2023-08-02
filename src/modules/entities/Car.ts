@@ -49,8 +49,8 @@ export class Car implements CarType {
 
     this.controls = new InputController(vehicleType);
     if (vehicleType != VehicleType.NPC) {
-      this.sensor = new Sensor(this);
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
+      this.sensor = new Sensor();
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 4]);
     }
   }
 
@@ -111,7 +111,6 @@ export class Car implements CarType {
   }
 
   public update(roadBorders: Border[][], traffic: Car[]): void {
-    console.log("hahalo");
     if (!this.damaged) {
       this.upDownControlls();
       this.leftRightControlls();
@@ -119,7 +118,7 @@ export class Car implements CarType {
       this.damaged = this.assesDamage(roadBorders, traffic);
     }
     if (this.sensor) {
-      this.sensor.update(roadBorders, traffic);
+      this.sensor.update(this.x, this.y, this.angle, roadBorders, traffic);
 
       const offsets = this.sensor.readings.map((reading) => {
         return reading == null ? 0 : 1 - reading.offset;

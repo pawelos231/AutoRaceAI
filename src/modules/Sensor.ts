@@ -9,15 +9,13 @@ import { Positions } from "../types/CommonTypes";
 const DEFAULT_RAY_COUNT = 5;
 
 export class Sensor {
-  car: Car;
   rayCount: number;
   rayLength: number;
   raySpread: number;
   rays: Positions[][];
   readings: Reading[];
 
-  constructor(car: Car, rayCount: number = DEFAULT_RAY_COUNT) {
-    this.car = car;
+  constructor(rayCount: number = DEFAULT_RAY_COUNT) {
     this.rayCount = rayCount;
     this.rayLength = 250;
     this.raySpread = Math.PI / 2;
@@ -25,7 +23,7 @@ export class Sensor {
     this.readings = [];
   }
 
-  private castRays(): void {
+  private castRays(x: number, y: number, angle: number): void {
     this.rays = [];
     for (let i = 0; i < this.rayCount; i++) {
       const rayAngle =
@@ -33,18 +31,24 @@ export class Sensor {
           this.raySpread / 2,
           -this.raySpread / 2,
           this.rayCount == 1 ? 0.5 : i / (this.rayCount - 1)
-        ) + this.car.angle;
-      const start = { x: this.car.x, y: this.car.y };
+        ) + angle;
+      const start = { x, y };
       const end = {
-        x: this.car.x - Math.sin(rayAngle) * this.rayLength,
-        y: this.car.y - Math.cos(rayAngle) * this.rayLength,
+        x: x - Math.sin(rayAngle) * this.rayLength,
+        y: y - Math.cos(rayAngle) * this.rayLength,
       };
       this.rays.push([start, end]);
     }
   }
 
-  public update(roadBorders: Border[][], traffic: Car[]): void {
-    this.castRays();
+  public update(
+    x: number,
+    y: number,
+    angle: number,
+    roadBorders: Border[][],
+    traffic: Car[]
+  ): void {
+    this.castRays(x, y, angle);
     this.readings = [];
     for (let i = 0; i < this.rays.length; i++) {
       this.readings.push(this.getReading(this.rays[i], roadBorders, traffic));
