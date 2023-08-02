@@ -23,10 +23,12 @@ export class CarCanvas extends Common<false> implements TCanvas {
   private traffic: Car[];
   private cars: Car[];
   private bestCar: Car | null = null;
+  private population: NeuralNetwork[];
 
   constructor() {
     super();
 
+    this.population = [];
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
     this.save();
@@ -89,17 +91,18 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
   private generateCars(N: number): Car[] {
     const cars = [];
+    const population: NeuralNetwork[] = [];
     for (let i = 1; i <= N; i++) {
-      cars.push(
-        new Car(
-          this.road.getLaneCenter(1),
-          CAR_Y_POS,
-          CAR_WIDTH,
-          CAR_HEIGHT,
-          VehicleType.AI,
-          VehicleSpeed.AVERAGE
-        )
+      let car = new Car(
+        this.road.getLaneCenter(1),
+        CAR_Y_POS,
+        CAR_WIDTH,
+        CAR_HEIGHT,
+        VehicleType.AI,
+        VehicleSpeed.AVERAGE
       );
+      population.push(car.brain!);
+      cars.push(car);
     }
     return cars;
   }

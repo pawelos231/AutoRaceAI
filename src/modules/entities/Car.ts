@@ -19,6 +19,7 @@ export class Car implements CarType {
   angle: number;
   damaged: boolean;
   isDone: boolean;
+  destination: number;
   polygon: Positions[] = [];
   controls: InputController;
   sensor: Sensor | null = null;
@@ -46,13 +47,13 @@ export class Car implements CarType {
     this.damaged = false;
     this.carType = vehicleType;
     this.isDone = false;
+    this.destination = -10000;
 
     this.useBrain = vehicleType == VehicleType.AI;
 
     this.controls = new InputController(vehicleType);
     if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor();
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 20]);
     }
   }
 
@@ -159,6 +160,13 @@ export class Car implements CarType {
       y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
     });
     return points;
+  }
+
+  calculateFitness(): number {
+    const distanceToDestination = this.y - this.destination;
+    const maxFitness = 1;
+    const fitness = 1 - distanceToDestination / maxFitness;
+    return Math.max(fitness, 0); // Make sure the fitness value is not negative.
   }
 
   public draw(
