@@ -14,6 +14,7 @@ import { Common } from "./Common";
 import { CAR_CANVAS_ID } from "../constants/classNames";
 import { NeuralNetwork } from "../network/index";
 import { BEST_CAR_LOCAL } from "../constants/classNames";
+import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -29,69 +30,19 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
     this.save();
-
+    this.traffic = [];
     this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.7);
-    this.cars = this.generateCars(1000);
+    this.cars = this.generateCars(300);
 
     if (localStorage.getItem(BEST_CAR_LOCAL)) {
       for (let i = 0; i < this.cars.length; i++) {
         this.cars[i].brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
         if (i > 0) {
-          NeuralNetwork.mutate(this.cars[i].brain!, 0.5);
+          NeuralNetwork.mutate(this.cars[i].brain!, 0.3);
         }
       }
     }
-
-    this.traffic = [
-      new Car(
-        this.road.getLaneCenter(1),
-        -100,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-      new Car(
-        this.road.getLaneCenter(0),
-        -300,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-      new Car(
-        this.road.getLaneCenter(2),
-        -300,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-      new Car(
-        this.road.getLaneCenter(0),
-        -700,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-      new Car(
-        this.road.getLaneCenter(1),
-        -600,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-      new Car(
-        this.road.getLaneCenter(1),
-        -900,
-        30,
-        50,
-        VehicleType.NPC,
-        VehicleSpeed.SLOW
-      ),
-    ];
+    this.generateRandomTraffic(20);
   }
 
   public initCanvas(): void {
@@ -164,5 +115,18 @@ export class CarCanvas extends Common<false> implements TCanvas {
     localStorage.removeItem("bestBrain");
   }
 
-  private generateRandomTraffic(numberOfCarsToGenerate) {}
+  private generateRandomTraffic(numberOfCarsToGenerate: number) {
+    for (let i = 0; i < numberOfCarsToGenerate; i++) {
+      this.traffic.push(
+        new Car(
+          this.road.getLaneCenter(getRandomValueBetweenNums(0, 3)),
+          -(i * 200) - 300,
+          getRandomValueBetweenNums(30, 50),
+          getRandomValueBetweenNums(50, 70),
+          VehicleType.NPC,
+          VehicleSpeed.SLOW
+        )
+      );
+    }
+  }
 }

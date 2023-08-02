@@ -50,7 +50,7 @@ export class Car implements CarType {
     this.controls = new InputController(vehicleType);
     if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor();
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 4]);
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 4, 6]);
     }
   }
 
