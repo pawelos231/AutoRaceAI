@@ -3,11 +3,13 @@ import { Level } from "./level";
 
 export class NeuralNetwork {
   levels: Level[];
+  fitness: number;
   constructor(neuronCounts: number[]) {
     this.levels = [];
     for (let i = 0; i < neuronCounts.length - 1; i++) {
       this.levels.push(new Level(neuronCounts[i], neuronCounts[i + 1]));
     }
+    this.fitness = 0;
   }
 
   static feedForward(givenInputs: number[], network: NeuralNetwork): number[] {
@@ -16,6 +18,14 @@ export class NeuralNetwork {
       outputs = Level.feedForward(outputs, network.levels[i]);
     }
     return outputs;
+  }
+
+  calculateFitness(expectedOutputs: number[], actualOutputs: number[]): void {
+    let sumSquaredError = 0;
+    for (let i = 0; i < expectedOutputs.length; i++) {
+      sumSquaredError += (expectedOutputs[i] - actualOutputs[i]) ** 2;
+    }
+    this.fitness = 1 / (1 + sumSquaredError);
   }
 
   static mutate(network: NeuralNetwork, amount = 1) {
@@ -33,5 +43,11 @@ export class NeuralNetwork {
         }
       }
     });
+  }
+  clone(): NeuralNetwork {
+    const clonedNetwork = new NeuralNetwork([]);
+    clonedNetwork.levels = this.levels.map((level) => level.clone());
+    clonedNetwork.fitness = this.fitness;
+    return clonedNetwork;
   }
 }

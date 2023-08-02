@@ -18,6 +18,7 @@ export class Car implements CarType {
   friction: number;
   angle: number;
   damaged: boolean;
+  isDone: boolean;
   polygon: Positions[] = [];
   controls: InputController;
   sensor: Sensor | null = null;
@@ -44,6 +45,7 @@ export class Car implements CarType {
     this.angle = 0;
     this.damaged = false;
     this.carType = vehicleType;
+    this.isDone = false;
 
     this.useBrain = vehicleType == VehicleType.AI;
 
@@ -129,6 +131,9 @@ export class Car implements CarType {
         this.controls.left = Boolean(outputs[1]);
         this.controls.right = Boolean(outputs[2]);
         this.controls.reverse = Boolean(outputs[3]);
+      }
+      if (this.y < -10000) {
+        this.isDone = true;
       }
     }
   }

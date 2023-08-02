@@ -43,4 +43,7 @@ export class Level {
 
     return level.outputs;
   }
+  clone(): Level {
+    return JSON.parse(JSON.stringify(this));
+  }
 }

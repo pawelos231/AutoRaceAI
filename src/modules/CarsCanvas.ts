@@ -42,7 +42,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
         }
       }
     }
-    this.generateRandomTraffic(20);
+    this.generateRandomTraffic(70);
   }
 
   public initCanvas(): void {
