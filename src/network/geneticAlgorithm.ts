@@ -10,6 +10,7 @@ import {
 import { VehicleType } from "../types/CarTypes";
 import { VehicleSpeed } from "../types/CarTypes";
 import { Road } from "../modules/entities/Road";
+import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 
 export class GeneticAlgorithm {
   static trainNeuralNetworks(
@@ -79,9 +80,9 @@ export class GeneticAlgorithm {
 
   // Helper function: Apply mutation to introduce small random changes in neural networks.
   private static mutate(population: NeuralNetwork[]): void {
-    // Implement the mutation operation here.
-    // Iterate through each neural network in the population and apply mutation.
-    // Mutation can involve changing random weights or biases in the neural network.
+    for (const neuralNetwork of population) {
+      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT);
+    }
   }
 
   // Helper function: Get a random element from an array.

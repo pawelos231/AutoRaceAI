@@ -16,6 +16,7 @@ import { NeuralNetwork } from "../network/index";
 import { BEST_CAR_LOCAL } from "../constants/classNames";
 import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
 import { GeneticAlgorithm } from "../network/geneticAlgorithm";
+import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 
 const ROAD_WIDTH_MULTIPLIER = 0.9;
 
@@ -104,7 +105,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       if (localStorage.getItem(BEST_CAR_LOCAL)) {
         car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
         if (i > 0) {
-          NeuralNetwork.mutate(car.brain!, 0.15);
+          NeuralNetwork.mutate(car.brain!, DEFAULT_MUTATION_AMOUNT);
         }
       }
       cars.push(car);

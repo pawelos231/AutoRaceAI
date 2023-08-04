@@ -8,28 +8,43 @@ import { RED } from "../../constants/DefaultValues/colors";
 import { NeuralNetwork } from "../../network/index";
 import { Common } from "../Common";
 import { Logger } from "../../types/CommonTypes";
+import {
+  END_OF_MAP_TOP,
+  END_OF_MAP_BOTTOM,
+} from "../../constants/DefaultValues/EntitiesDimmensions";
 
 export class Car extends Common<false> implements CarType {
+  // Position and Dimensions
   x: number;
   y: number;
   width: number;
   height: number;
+
+  // Movement
   speed: number;
   acceleration: number;
   maxSpeed: number;
   friction: number;
   angle: number;
+
+  // State
   damaged: boolean;
   isDone: boolean;
+
+  // Destination
   destination: number;
+
+  // Lane information
+  laneCount: number;
   getLaneCenter: (laneIndex: number) => number;
+
+  // Additional Car Properties
   polygon: Positions[] = [];
   controls: InputController;
   sensor: Sensor | null = null;
   carType: VehicleType;
   brain: NeuralNetwork | null = null;
-  useBrain: any;
-  laneCount: number;
+  useBrain: boolean;
 
   constructor(
     x: number,
@@ -54,7 +69,7 @@ export class Car extends Common<false> implements CarType {
     this.damaged = false;
     this.carType = vehicleType;
     this.isDone = false;
-    this.destination = -10000;
+    this.destination = END_OF_MAP_TOP;
     this.getLaneCenter = getLaneCenter;
     this.laneCount = laneCount;
 
@@ -146,11 +161,11 @@ export class Car extends Common<false> implements CarType {
         this.controls.reverse = Boolean(outputs[3]);
       }
 
-      if (this.y < -10000) {
+      if (this.y < END_OF_MAP_TOP) {
         this.isDone = true;
         this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
       }
-      if (this.y > 1000) {
+      if (this.y > END_OF_MAP_BOTTOM) {
         this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
       }
     }
