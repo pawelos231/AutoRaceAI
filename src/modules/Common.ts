@@ -66,6 +66,7 @@ export class Common<T extends boolean = false> {
       );
 
     const messageNode: HTMLElement = this.bindElementByClass("MESSAGE");
+    this.changeVisbilityOfGivenElement(messageNode, true);
 
     switch (status) {
       case Logger.Error:

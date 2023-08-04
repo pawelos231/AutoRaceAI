@@ -6,8 +6,10 @@ import { Positions } from "../../types/CommonTypes";
 import { polyInstersect } from "../../utility/polyIntersect";
 import { RED } from "../../constants/DefaultValues/colors";
 import { NeuralNetwork } from "../../network/index";
+import { Common } from "../Common";
+import { Logger } from "../../types/CommonTypes";
 
-export class Car implements CarType {
+export class Car extends Common<false> implements CarType {
   x: number;
   y: number;
   width: number;
@@ -39,6 +41,7 @@ export class Car implements CarType {
     getLaneCenter: (laneIndex: number) => number,
     laneCount: number
   ) {
+    super();
     this.x = x;
     this.y = y;
     this.width = width;
@@ -145,6 +148,10 @@ export class Car implements CarType {
 
       if (this.y < -10000) {
         this.isDone = true;
+        this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
+      }
+      if (this.y > 1000) {
+        this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
       }
     }
   }
@@ -172,12 +179,20 @@ export class Car implements CarType {
     return points;
   }
 
+  private normalizeDistance(): number {
+    const minValue = 1000;
+    const maxValue = -10000;
+
+    const clampedDistance = Math.max(this.y, maxValue);
+
+    const normalizedValue =
+      1 - (clampedDistance - maxValue) / (minValue - maxValue);
+    return normalizedValue;
+  }
+
   public calculateFitness(): number | void {
-    if (this.carType != VehicleType.AI || this.damaged) return;
-    const distanceToDestination = Math.abs(
-      (this.y - this.destination) / (this.destination * 2)
-    );
-    console.log((this.destination - this.y) / this.destination);
+    if (this.carType !== VehicleType.AI || this.damaged) return;
+
     const maxValue = 300;
     const minValue = 0;
     let bestDistanceFromCenter = 0;
@@ -193,8 +208,8 @@ export class Car implements CarType {
 
     const maxFitness = 2;
     const fitness =
-      (distanceToDestination + bestDistanceFromCenter) / maxFitness;
-    console.log(fitness.toFixed(3));
+      (this.normalizeDistance() + bestDistanceFromCenter) / maxFitness;
+    console.log(fitness);
     return Math.max(fitness, 0); // Make sure the fitness value is not negative.
   }
 

@@ -16,3 +16,19 @@ body {
 #neuralNetworkCanvas{
     background-color: black;
 }
+
+.MESSAGE {
+    position: absolute;
+    display: flex;
+    top: 20px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 35px;
+    background-color: black;
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 8px;
+}
+
+.hidden {
+    display: none !important;
+}
