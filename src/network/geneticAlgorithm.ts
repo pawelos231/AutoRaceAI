@@ -1,60 +1,28 @@
 import { NeuralNetwork } from "./index";
-import { Border } from "../types/RoadTypes";
 import { Car } from "../modules/entities/Car";
-import {
-  CAR_Y_POS,
-  CAR_HEIGHT,
-  CAR_WIDTH,
-  CAR_X_POX,
-} from "../constants/DefaultValues/EntitiesDimmensions";
-import { VehicleType } from "../types/CarTypes";
-import { VehicleSpeed } from "../types/CarTypes";
-import { Road } from "../modules/entities/Road";
 import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 
 export class GeneticAlgorithm {
-  static trainNeuralNetworks(
-    population: NeuralNetwork[],
-    roadBorders: Border[][],
-    traffic: Car[],
-    road: Road
-  ) {
-    // Implement the method to train the neural networks in the population using the genetic algorithm.
-    // Evaluate the performance of each neural network (car), assign fitness scores, and update the neural networks.
-    for (const neuralNetwork of population) {
-      const car = new Car(
-        road.getLaneCenter(1),
-        CAR_Y_POS,
-        CAR_WIDTH,
-        CAR_HEIGHT,
-        VehicleType.AI,
-        VehicleSpeed.AVERAGE,
-        road.getLaneCenter.bind(road),
-        road.laneCount
-      );
-      car.brain = neuralNetwork;
-      car.update(roadBorders, traffic);
-      const fitness = car.calculateFitness();
-      console.log(fitness);
-      if (fitness) {
-        neuralNetwork.setFit = Number(fitness);
-      } else {
-        throw new Error("error setting fitness");
-      }
+  static trainNeuralNetworks(cars: Car[], population: NeuralNetwork[]) {
+    for (let i = 0; i < cars.length; i++) {
+      const fitness = cars[i].calculateFitness();
+      cars[i].brain!.fitness = fitness || 0;
+      population[i] = cars[i].brain!;
     }
   }
 
-  public static EvolvePopulation(population: NeuralNetwork[]): NeuralNetwork[] {
+  public static evolvePopulation(
+    population: NeuralNetwork[],
+    rayCount: number
+  ): NeuralNetwork[] {
     const newGeneration: NeuralNetwork[] = [];
 
-    // Selection: Choose the best-performing neural networks for reproduction.
     const selectedNets = GeneticAlgorithm.selection(population);
 
-    // Crossover: Perform crossover to create new offspring neural networks.
     while (newGeneration.length < population.length) {
       const parent1 = GeneticAlgorithm.getRandomElement(selectedNets);
       const parent2 = GeneticAlgorithm.getRandomElement(selectedNets);
-      const offspring = GeneticAlgorithm.crossover(parent1, parent2);
+      const offspring = GeneticAlgorithm.crossover(parent1, parent2, rayCount);
       newGeneration.push(offspring);
     }
     GeneticAlgorithm.mutate(newGeneration);
@@ -63,29 +31,49 @@ export class GeneticAlgorithm {
   }
 
   private static selection(population: NeuralNetwork[]): NeuralNetwork[] {
-    // You can implement various selection techniques here, such as
-    // tournament selection, roulette wheel selection, or rank-based selection.
-    // Choose the best-performing neural networks based on their fitness scores.
-    // Return an array of selected neural networks.
+    const sortedPopulation = population.sort((a, b) => b.fitness - a.fitness);
+    console.log(sortedPopulation);
+
+    // Choose the top half neural networks as selectedNets
+    const selectedNets = sortedPopulation.slice(
+      0,
+      Math.ceil(sortedPopulation.length / 2)
+    );
+
+    return selectedNets;
   }
 
-  // Helper function: Perform crossover to create offspring neural networks.
   private static crossover(
     parent1: NeuralNetwork,
-    parent2: NeuralNetwork
+    parent2: NeuralNetwork,
+    raycount: number
   ): NeuralNetwork {
-    // Implement the crossover operation here, either single-point or uniform crossover.
-    // Return a new neural network (offspring) created from the parents.
+    // Perform single-point crossover
+    const child = new NeuralNetwork([raycount, 10, 10]);
+
+    const crossoverPoint = Math.floor(Math.random() * parent1.levels!.length);
+
+    for (let i = 0; i < parent1.levels.length; i++) {
+      if (i < crossoverPoint) {
+        // Copy the level from parent 1 to the child
+        child.levels[i] = JSON.parse(JSON.stringify(parent1.levels[i]));
+        child.fitness = parent1.fitness;
+      } else {
+        // Copy the level from parent 2 to the child
+        child.levels[i] = JSON.parse(JSON.stringify(parent2.levels[i]));
+        child.fitness = parent2.fitness;
+      }
+    }
+
+    return child;
   }
 
-  // Helper function: Apply mutation to introduce small random changes in neural networks.
   private static mutate(population: NeuralNetwork[]): void {
     for (const neuralNetwork of population) {
-      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT);
+      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT / 2);
     }
   }
 
-  // Helper function: Get a random element from an array.
   private static getRandomElement<T>(arr: T[]): T {
     const randomIndex = Math.floor(Math.random() * arr.length);
     return arr[randomIndex];

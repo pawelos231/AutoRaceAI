@@ -17,8 +17,11 @@ import { BEST_CAR_LOCAL } from "../constants/classNames";
 import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
 import { GeneticAlgorithm } from "../network/geneticAlgorithm";
 import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
+import { END_OF_MAP_TOP } from "../constants/DefaultValues/EntitiesDimmensions";
 
 const ROAD_WIDTH_MULTIPLIER = 0.9;
+const RANDOM_TRAFFIC_COUNT = 70;
+const CARS_TO_TRAIN_COUNT = 300;
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -31,7 +34,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
   constructor() {
     super();
-
+    this.cleanUpOfCars();
     this.population = [];
     this.canvas = this.bindElementById(CAR_CANVAS_ID) as HTMLCanvasElement;
     this.initCanvas();
@@ -41,9 +44,8 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.canvas?.width! / 2,
       this.canvas?.width! * ROAD_WIDTH_MULTIPLIER
     );
-    this.cars = this.generateCars(300);
-
-    this.generateRandomTraffic(70);
+    this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
+    this.traffic = this.generateRandomTraffic(RANDOM_TRAFFIC_COUNT);
   }
 
   public initCanvas(): void {
@@ -52,7 +54,39 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.ctx = this.canvas.getContext("2d");
   }
 
+  private shouldCarsTrain(): void {
+    this.bestCar = this.cars.find((car) => {
+      return car.y == Math.min(...this.cars.map((c) => c.y));
+    })!;
+
+    if (this.bestCar.y < END_OF_MAP_TOP) {
+      GeneticAlgorithm.trainNeuralNetworks(this.cars, this.population);
+
+      this.population = GeneticAlgorithm.evolvePopulation(
+        this.population,
+        this.cars[0].sensor?.rayCount!
+      );
+
+      this.population.sort((a, b) => b.fitness - a.fitness);
+      const bestFit = this.population[0].fitness;
+      console.log(bestFit);
+      const localBrain: NeuralNetwork = JSON.parse(
+        localStorage.getItem(BEST_CAR_LOCAL)!
+      );
+      if (bestFit > localBrain.fitness) {
+        this.cars[0].brain = this.population[0];
+        this.bestCar.brain = this.population[0];
+        this.saveBestCarToStorage();
+      }
+
+      this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
+      this.traffic = this.generateRandomTraffic(RANDOM_TRAFFIC_COUNT);
+    }
+  }
+
   public animate(): void {
+    this.shouldCarsTrain();
+
     for (let i = 0; i < this.traffic.length; i++) {
       this.traffic[i].update(this.road.borders, []);
     }
@@ -61,14 +95,10 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.cars[i].update(this.road.borders, this.traffic);
     }
 
-    this.bestCar = this.cars.find((car) => {
-      return car.y == Math.min(...this.cars.map((c) => c.y));
-    })!;
-
     this.ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     this.ctx?.save();
-    this.ctx?.translate(0, -this.bestCar.y + this.canvas?.height! * 0.7);
+    this.ctx?.translate(0, -this.bestCar!.y + this.canvas?.height! * 0.7);
 
     this.road.draw(this.ctx!);
     for (const car of this.traffic) {
@@ -81,7 +111,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       car.draw(this.ctx!, BLACK);
     }
     this.ctx!.globalAlpha = 1;
-    this.bestCar.draw(this.ctx!, BLACK, true);
+    this.bestCar!.draw(this.ctx!, BLACK, true);
 
     this.ctx?.restore();
 
@@ -102,43 +132,49 @@ export class CarCanvas extends Common<false> implements TCanvas {
         this.road.getLaneCenter.bind(this.road),
         this.road.laneCount
       );
-      if (localStorage.getItem(BEST_CAR_LOCAL)) {
-        car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
-        if (i > 0) {
-          NeuralNetwork.mutate(car.brain!, DEFAULT_MUTATION_AMOUNT);
+      cars.push(car);
+      if (this.population.length == 0) {
+        population.push(car.brain!);
+        if (localStorage.getItem(BEST_CAR_LOCAL)) {
+          car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
+          if (i > 1) {
+            NeuralNetwork.mutate(car.brain!, DEFAULT_MUTATION_AMOUNT);
+          }
+        }
+      } else {
+        if (localStorage.getItem(BEST_CAR_LOCAL)) {
+          if (i == 1) {
+            car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!)!;
+          }
+          car.brain = this.population[i - 1];
         }
       }
-      cars.push(car);
-      population.push(car.brain!);
-      console.log(car.brain);
+    }
+    if (this.population.length == 0) {
+      this.population = population;
     }
 
-    const maxGenerations = 4;
-    for (let generation = 0; generation < maxGenerations; generation++) {
-      GeneticAlgorithm.trainNeuralNetworks(
-        population,
-        this.road.borders,
-        this.traffic,
-        this.road
-      );
-      population.sort((a, b) => b.getFit - a.getFit);
-    }
     return cars;
+  }
+
+  private saveBestCarToStorage() {
+    localStorage.setItem(BEST_CAR_LOCAL, JSON.stringify(this.bestCar!.brain));
   }
 
   private save() {
     let save = this.bindElementByClass("save");
     save.addEventListener("click", () => {
-      localStorage.setItem(BEST_CAR_LOCAL, JSON.stringify(this.bestCar!.brain));
+      this.saveBestCarToStorage();
     });
   }
 
   private generateRandomTraffic(numberOfCarsToGenerate: number) {
+    const traffic = [];
     for (let i = 0; i < numberOfCarsToGenerate; i++) {
-      this.traffic.push(
+      traffic.push(
         new Car(
           this.road.getLaneCenter(getRandomValueBetweenNums(0, 3)),
-          -(i * 150) - 300,
+          -(i * 180) - 300,
           getRandomValueBetweenNums(30, 40),
           getRandomValueBetweenNums(60, 70),
           VehicleType.NPC,
@@ -148,5 +184,28 @@ export class CarCanvas extends Common<false> implements TCanvas {
         )
       );
     }
+    return traffic;
+  }
+
+  private cleanUpNpcs() {
+    for (let i = 0; i < this.traffic.length; i++) {
+      if (Math.abs(this.bestCar!.y) - Math.abs(this.traffic[i].y) > 1000) {
+        this.traffic.splice(i, 1);
+      }
+    }
+  }
+
+  private cleanUpAi() {
+    for (let i = 0; i < this.cars.length; i++) {
+      if (this.cars[i].damaged) {
+        this.cars.splice(i, 1);
+      }
+    }
+  }
+
+  public cleanUpOfCars() {
+    setInterval(() => {
+      this.cleanUpNpcs();
+    }, 1000);
   }
 }

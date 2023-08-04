@@ -2,21 +2,14 @@ import { lerp } from "three/src/math/MathUtils";
 import { Level } from "./level";
 
 export class NeuralNetwork {
-  private levels: Level[];
-  private fitness: number;
+  public levels: Level[];
+  public fitness: number;
   constructor(neuronCounts: number[]) {
     this.levels = [];
     for (let i = 0; i < neuronCounts.length - 1; i++) {
       this.levels.push(new Level(neuronCounts[i], neuronCounts[i + 1]));
     }
     this.fitness = 0;
-  }
-
-  set setFit(fitness: number) {
-    this.fitness = fitness;
-  }
-  get getFit() {
-    return this.fitness;
   }
 
   static feedForward(givenInputs: number[], network: NeuralNetwork): number[] {
@@ -51,6 +44,7 @@ export class NeuralNetwork {
       }
     });
   }
+
   clone(): NeuralNetwork {
     const clonedNetwork = new NeuralNetwork([]);
     clonedNetwork.levels = this.levels.map((level) => level.clone());

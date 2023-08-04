@@ -23,4 +23,5 @@ export enum VehicleSpeed {
 export interface CarType {
   draw: (ctx: CanvasRenderingContext2D, color: string) => void;
   update: (roadBorders: Border[][], traffic: Car[]) => void;
+  calculateFitness: () => number | void;
 }

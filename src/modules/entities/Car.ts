@@ -75,10 +75,12 @@ export class Car extends Common<false> implements CarType {
 
     this.useBrain = vehicleType == VehicleType.AI;
 
-    this.controls = new InputController(vehicleType);
     if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor();
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 10, 10]);
     }
+    this.controls = new InputController(vehicleType);
+
     setInterval(() => {
       this.calculateFitness();
     }, 5000);
@@ -206,7 +208,7 @@ export class Car extends Common<false> implements CarType {
   }
 
   public calculateFitness(): number | void {
-    if (this.carType !== VehicleType.AI || this.damaged) return;
+    if (this.carType !== VehicleType.AI) return;
 
     const maxValue = 300;
     const minValue = 0;
@@ -223,7 +225,10 @@ export class Car extends Common<false> implements CarType {
 
     const maxFitness = 1;
     const fitness =
-      (this.normalizeDistance() + bestDistanceFromCenter) / (maxFitness * 2);
+      (this.normalizeDistance() +
+        bestDistanceFromCenter +
+        this.speed / this.maxSpeed) /
+      (maxFitness * 3);
     return Math.max(fitness, 0);
   }
 
