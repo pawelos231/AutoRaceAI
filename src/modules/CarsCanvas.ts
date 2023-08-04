@@ -15,6 +15,7 @@ import { CAR_CANVAS_ID } from "../constants/classNames";
 import { NeuralNetwork } from "../network/index";
 import { BEST_CAR_LOCAL } from "../constants/classNames";
 import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
+import { GeneticAlgorithm } from "../network/geneticAlgorithm";
 
 const ROAD_WIDTH_MULTIPLIER = 0.9;
 
@@ -41,14 +42,6 @@ export class CarCanvas extends Common<false> implements TCanvas {
     );
     this.cars = this.generateCars(300);
 
-    if (localStorage.getItem(BEST_CAR_LOCAL)) {
-      for (let i = 0; i < this.cars.length; i++) {
-        this.cars[i].brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
-        if (i > 0) {
-          NeuralNetwork.mutate(this.cars[i].brain!, 0.15);
-        }
-      }
-    }
     this.generateRandomTraffic(70);
   }
 
@@ -96,7 +89,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
   private generateCars(N: number): Car[] {
     const cars = [];
-    const population: NeuralNetwork[] = [];
+    let population: NeuralNetwork[] = [];
     for (let i = 1; i <= N; i++) {
       let car = new Car(
         this.road.getLaneCenter(1),
@@ -108,8 +101,26 @@ export class CarCanvas extends Common<false> implements TCanvas {
         this.road.getLaneCenter.bind(this.road),
         this.road.laneCount
       );
-      population.push(car.brain!);
+      if (localStorage.getItem(BEST_CAR_LOCAL)) {
+        car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
+        if (i > 0) {
+          NeuralNetwork.mutate(car.brain!, 0.15);
+        }
+      }
       cars.push(car);
+      population.push(car.brain!);
+      console.log(car.brain);
+    }
+
+    const maxGenerations = 4;
+    for (let generation = 0; generation < maxGenerations; generation++) {
+      GeneticAlgorithm.trainNeuralNetworks(
+        population,
+        this.road.borders,
+        this.traffic,
+        this.road
+      );
+      population.sort((a, b) => b.getFit - a.getFit);
     }
     return cars;
   }

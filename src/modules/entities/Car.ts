@@ -206,11 +206,10 @@ export class Car extends Common<false> implements CarType {
       );
     }
 
-    const maxFitness = 2;
+    const maxFitness = 1;
     const fitness =
-      (this.normalizeDistance() + bestDistanceFromCenter) / maxFitness;
-    console.log(fitness);
-    return Math.max(fitness, 0); // Make sure the fitness value is not negative.
+      (this.normalizeDistance() + bestDistanceFromCenter) / (maxFitness * 2);
+    return Math.max(fitness, 0);
   }
 
   public draw(
