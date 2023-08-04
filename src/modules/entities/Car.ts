@@ -20,12 +20,14 @@ export class Car implements CarType {
   damaged: boolean;
   isDone: boolean;
   destination: number;
+  getLaneCenter: (laneIndex: number) => number;
   polygon: Positions[] = [];
   controls: InputController;
   sensor: Sensor | null = null;
   carType: VehicleType;
   brain: NeuralNetwork | null = null;
   useBrain: any;
+  laneCount: number;
 
   constructor(
     x: number,
@@ -33,7 +35,9 @@ export class Car implements CarType {
     width: number,
     height: number,
     vehicleType: VehicleType,
-    maxSpeed = 3
+    maxSpeed = 3,
+    getLaneCenter: (laneIndex: number) => number,
+    laneCount: number
   ) {
     this.x = x;
     this.y = y;
@@ -48,6 +52,8 @@ export class Car implements CarType {
     this.carType = vehicleType;
     this.isDone = false;
     this.destination = -10000;
+    this.getLaneCenter = getLaneCenter;
+    this.laneCount = laneCount;
 
     this.useBrain = vehicleType == VehicleType.AI;
 
@@ -55,6 +61,9 @@ export class Car implements CarType {
     if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor();
     }
+    setInterval(() => {
+      this.calculateFitness();
+    }, 5000);
   }
 
   private upDownControlls(): void {
@@ -133,6 +142,7 @@ export class Car implements CarType {
         this.controls.right = Boolean(outputs[2]);
         this.controls.reverse = Boolean(outputs[3]);
       }
+
       if (this.y < -10000) {
         this.isDone = true;
       }
@@ -162,10 +172,29 @@ export class Car implements CarType {
     return points;
   }
 
-  calculateFitness(): number {
-    const distanceToDestination = this.y - this.destination;
-    const maxFitness = 1;
-    const fitness = 1 - distanceToDestination / maxFitness;
+  public calculateFitness(): number | void {
+    if (this.carType != VehicleType.AI || this.damaged) return;
+    const distanceToDestination = Math.abs(
+      (this.y - this.destination) / (this.destination * 2)
+    );
+    console.log((this.destination - this.y) / this.destination);
+    const maxValue = 300;
+    const minValue = 0;
+    let bestDistanceFromCenter = 0;
+    for (let i = 0; i < this.laneCount; i++) {
+      const distanceFromLaneCenter = Math.abs(this.x - this.getLaneCenter(i));
+      const normalizedValue =
+        (maxValue - distanceFromLaneCenter) / (maxValue - minValue);
+      bestDistanceFromCenter = Math.max(
+        bestDistanceFromCenter,
+        normalizedValue
+      );
+    }
+
+    const maxFitness = 2;
+    const fitness =
+      (distanceToDestination + bestDistanceFromCenter) / maxFitness;
+    console.log(fitness.toFixed(3));
     return Math.max(fitness, 0); // Make sure the fitness value is not negative.
   }
 

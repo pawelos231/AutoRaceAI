@@ -15,7 +15,7 @@ export class NeuralNetwork {
   set setFit(fitness: number) {
     this.fitness = fitness;
   }
-  get getFir() {
+  get getFit() {
     return this.fitness;
   }
 

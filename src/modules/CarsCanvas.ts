@@ -16,6 +16,8 @@ import { NeuralNetwork } from "../network/index";
 import { BEST_CAR_LOCAL } from "../constants/classNames";
 import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
 
+const ROAD_WIDTH_MULTIPLIER = 0.9;
+
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D | null = null;
@@ -33,14 +35,17 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.initCanvas();
     this.save();
     this.traffic = [];
-    this.road = new Road(this.canvas?.width! / 2, this.canvas?.width! * 0.9);
+    this.road = new Road(
+      this.canvas?.width! / 2,
+      this.canvas?.width! * ROAD_WIDTH_MULTIPLIER
+    );
     this.cars = this.generateCars(300);
 
     if (localStorage.getItem(BEST_CAR_LOCAL)) {
       for (let i = 0; i < this.cars.length; i++) {
         this.cars[i].brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
         if (i > 0) {
-          NeuralNetwork.mutate(this.cars[i].brain!, 0.2);
+          NeuralNetwork.mutate(this.cars[i].brain!, 0.15);
         }
       }
     }
@@ -99,7 +104,9 @@ export class CarCanvas extends Common<false> implements TCanvas {
         CAR_WIDTH,
         CAR_HEIGHT,
         VehicleType.AI,
-        VehicleSpeed.AVERAGE
+        VehicleSpeed.AVERAGE,
+        this.road.getLaneCenter.bind(this.road),
+        this.road.laneCount
       );
       population.push(car.brain!);
       cars.push(car);
@@ -119,11 +126,13 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.traffic.push(
         new Car(
           this.road.getLaneCenter(getRandomValueBetweenNums(0, 3)),
-          -(i * 200) - 300,
-          getRandomValueBetweenNums(30, 50),
-          getRandomValueBetweenNums(50, 70),
+          -(i * 150) - 300,
+          getRandomValueBetweenNums(30, 40),
+          getRandomValueBetweenNums(60, 70),
           VehicleType.NPC,
-          VehicleSpeed.SLOW
+          VehicleSpeed.SLOW,
+          this.road.getLaneCenter.bind(this.road),
+          this.road.laneCount
         )
       );
     }
