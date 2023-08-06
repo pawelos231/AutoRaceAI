@@ -2,6 +2,23 @@ import { NeuralNetwork } from "./index";
 import { Car } from "../modules/entities/Car";
 import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 
+function getMutationAmount(
+  currentGeneration: number,
+  initialMutationAmount: number,
+  decayRate: number,
+  bestFitness: number
+): number {
+  const fitnessScale = 1 - bestFitness;
+
+  const mutationAmount =
+    initialMutationAmount /
+    (1 + decayRate * currentGeneration) /
+    (1 + fitnessScale);
+
+  const minMutationAmount = 0.01;
+  return Math.max(mutationAmount, minMutationAmount);
+}
+
 export class GeneticAlgorithm {
   static trainNeuralNetworks(cars: Car[], population: NeuralNetwork[]) {
     for (let i = 0; i < cars.length; i++) {
@@ -13,7 +30,9 @@ export class GeneticAlgorithm {
 
   public static evolvePopulation(
     population: NeuralNetwork[],
-    rayCount: number
+    rayCount: number,
+    generation: number,
+    bestFit: number
   ): NeuralNetwork[] {
     const newGeneration: NeuralNetwork[] = [];
 
@@ -25,14 +44,20 @@ export class GeneticAlgorithm {
       const offspring = GeneticAlgorithm.crossover(parent1, parent2, rayCount);
       newGeneration.push(offspring);
     }
-    GeneticAlgorithm.mutate(newGeneration);
+    const mutation_amount = getMutationAmount(
+      generation,
+      DEFAULT_MUTATION_AMOUNT,
+      0.015,
+      bestFit
+    );
+
+    GeneticAlgorithm.mutate(newGeneration, mutation_amount * 1.5);
 
     return newGeneration;
   }
 
   private static selection(population: NeuralNetwork[]): NeuralNetwork[] {
     const sortedPopulation = population.sort((a, b) => b.fitness - a.fitness);
-    console.log(sortedPopulation);
 
     // Choose the top half neural networks as selectedNets
     const selectedNets = sortedPopulation.slice(
@@ -49,17 +74,15 @@ export class GeneticAlgorithm {
     raycount: number
   ): NeuralNetwork {
     // Perform single-point crossover
-    const child = new NeuralNetwork([raycount, 10, 10]);
+    const child = new NeuralNetwork([raycount, 10, 10, 10, 10]);
 
     const crossoverPoint = Math.floor(Math.random() * parent1.levels!.length);
 
     for (let i = 0; i < parent1.levels.length; i++) {
       if (i < crossoverPoint) {
-        // Copy the level from parent 1 to the child
         child.levels[i] = JSON.parse(JSON.stringify(parent1.levels[i]));
         child.fitness = parent1.fitness;
       } else {
-        // Copy the level from parent 2 to the child
         child.levels[i] = JSON.parse(JSON.stringify(parent2.levels[i]));
         child.fitness = parent2.fitness;
       }
@@ -68,9 +91,9 @@ export class GeneticAlgorithm {
     return child;
   }
 
-  private static mutate(population: NeuralNetwork[]): void {
+  private static mutate(population: NeuralNetwork[], mutation: number): void {
     for (const neuralNetwork of population) {
-      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT / 2);
+      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT);
     }
   }
 

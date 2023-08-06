@@ -30,6 +30,7 @@ export class Car extends Common<false> implements CarType {
   // State
   damaged: boolean;
   isDone: boolean;
+  createdAt: number;
 
   // Destination
   destination: number;
@@ -72,18 +73,15 @@ export class Car extends Common<false> implements CarType {
     this.destination = END_OF_MAP_TOP;
     this.getLaneCenter = getLaneCenter;
     this.laneCount = laneCount;
+    this.createdAt = Date.now();
 
     this.useBrain = vehicleType == VehicleType.AI;
 
     if (vehicleType != VehicleType.NPC) {
       this.sensor = new Sensor();
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 10, 10]);
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 10, 10, 10, 10]);
     }
     this.controls = new InputController(vehicleType);
-
-    setInterval(() => {
-      this.calculateFitness();
-    }, 5000);
   }
 
   private upDownControlls(): void {
@@ -167,9 +165,6 @@ export class Car extends Common<false> implements CarType {
         this.isDone = true;
         this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
       }
-      if (this.y > END_OF_MAP_BOTTOM) {
-        this.displayMessageAtTheTopOfTheScreen("OUT OF MAP", Logger.Warn);
-      }
     }
   }
 
@@ -209,6 +204,14 @@ export class Car extends Common<false> implements CarType {
 
   public calculateFitness(): number | void {
     if (this.carType !== VehicleType.AI) return;
+    const FRAMES_PER_SEC = 165;
+    let expectedTime = 10000 / (FRAMES_PER_SEC * this.maxSpeed);
+    if (this.damaged) {
+      expectedTime =
+        (10000 / (FRAMES_PER_SEC * this.maxSpeed)) * this.normalizeDistance();
+    }
+    const finishTime = Date.now() - this.createdAt;
+    const normalizedFinishTimeFitnessValue = expectedTime / (finishTime / 1000);
 
     const maxValue = 300;
     const minValue = 0;
@@ -223,12 +226,15 @@ export class Car extends Common<false> implements CarType {
       );
     }
 
+    const weight = 7;
+
     const maxFitness = 1;
     const fitness =
-      (this.normalizeDistance() +
+      (normalizedFinishTimeFitnessValue * weight +
+        this.normalizeDistance() +
         bestDistanceFromCenter +
         this.speed / this.maxSpeed) /
-      (maxFitness * 3);
+      (maxFitness * 10);
     return Math.max(fitness, 0);
   }
 

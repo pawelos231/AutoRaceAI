@@ -18,10 +18,10 @@ import { getRandomValueBetweenNums } from "../helpers/getRandomValue";
 import { GeneticAlgorithm } from "../network/geneticAlgorithm";
 import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 import { END_OF_MAP_TOP } from "../constants/DefaultValues/EntitiesDimmensions";
+import { TRAFFIC_MOCK_DATA } from "../data/traffic";
 
 const ROAD_WIDTH_MULTIPLIER = 0.9;
-const RANDOM_TRAFFIC_COUNT = 70;
-const CARS_TO_TRAIN_COUNT = 300;
+const CARS_TO_TRAIN_COUNT = 400;
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -31,6 +31,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
   private cars: Car[];
   private bestCar: Car | null = null;
   private population: NeuralNetwork[];
+  private generation: number;
 
   constructor() {
     super();
@@ -45,7 +46,8 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.canvas?.width! * ROAD_WIDTH_MULTIPLIER
     );
     this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
-    this.traffic = this.generateRandomTraffic(RANDOM_TRAFFIC_COUNT);
+    this.traffic = this.generateMockTrafficNonRandom();
+    this.generation = 0;
   }
 
   public initCanvas(): void {
@@ -64,23 +66,37 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
       this.population = GeneticAlgorithm.evolvePopulation(
         this.population,
-        this.cars[0].sensor?.rayCount!
+        this.cars[0].sensor?.rayCount!,
+        this.generation,
+        this.population[0].fitness
       );
 
       this.population.sort((a, b) => b.fitness - a.fitness);
       const bestFit = this.population[0].fitness;
-      console.log(bestFit);
+
+      const averageFit =
+        this.population.reduce((a, b) => a + b.fitness, 0) /
+        this.population.length;
+
+      console.log("BEST FIT:", bestFit, "AVG FIT:", averageFit);
+
       const localBrain: NeuralNetwork = JSON.parse(
         localStorage.getItem(BEST_CAR_LOCAL)!
       );
-      if (bestFit > localBrain.fitness) {
+      if (localBrain && bestFit > localBrain.fitness) {
         this.cars[0].brain = this.population[0];
         this.bestCar.brain = this.population[0];
         this.saveBestCarToStorage();
       }
-
+      if (!localBrain) {
+        localStorage.setItem(
+          BEST_CAR_LOCAL,
+          JSON.stringify(this.population![0])
+        );
+      }
+      this.generation++;
       this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
-      this.traffic = this.generateRandomTraffic(RANDOM_TRAFFIC_COUNT);
+      this.traffic = this.generateMockTrafficNonRandom();
     }
   }
 
@@ -114,13 +130,20 @@ export class CarCanvas extends Common<false> implements TCanvas {
     this.bestCar!.draw(this.ctx!, BLACK, true);
 
     this.ctx?.restore();
+    this.DrawGeneerationNumber();
 
     requestAnimationFrame(this.animate.bind(this));
   }
 
   private generateCars(N: number): Car[] {
     const cars = [];
+    this.cars = [];
     let population: NeuralNetwork[] = [];
+    if (this.population.length == 0) {
+      console.log("CREATING NEW POPULATION");
+    } else {
+      console.log("USING OLD POPULATION");
+    }
     for (let i = 1; i <= N; i++) {
       let car = new Car(
         this.road.getLaneCenter(1),
@@ -136,17 +159,19 @@ export class CarCanvas extends Common<false> implements TCanvas {
       if (this.population.length == 0) {
         population.push(car.brain!);
         if (localStorage.getItem(BEST_CAR_LOCAL)) {
-          car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
-          if (i > 1) {
+          if (i < 5) {
+            car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
+          } else {
             NeuralNetwork.mutate(car.brain!, DEFAULT_MUTATION_AMOUNT);
           }
         }
       } else {
         if (localStorage.getItem(BEST_CAR_LOCAL)) {
-          if (i == 1) {
+          if (i < 5) {
             car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!)!;
+          } else {
+            car.brain = this.population[i - 1];
           }
-          car.brain = this.population[i - 1];
         }
       }
     }
@@ -166,6 +191,26 @@ export class CarCanvas extends Common<false> implements TCanvas {
     save.addEventListener("click", () => {
       this.saveBestCarToStorage();
     });
+  }
+
+  private generateMockTrafficNonRandom() {
+    const traffic = [];
+    const MOCKED = TRAFFIC_MOCK_DATA(this.road);
+    for (let i = 0; i < MOCKED.length; i++) {
+      traffic.push(
+        new Car(
+          MOCKED[i].x,
+          MOCKED[i].y,
+          30,
+          60,
+          VehicleType.NPC,
+          VehicleSpeed.SLOW,
+          this.road.getLaneCenter.bind(this.road),
+          this.road.laneCount
+        )
+      );
+    }
+    return traffic;
   }
 
   private generateRandomTraffic(numberOfCarsToGenerate: number) {
@@ -207,5 +252,15 @@ export class CarCanvas extends Common<false> implements TCanvas {
     setInterval(() => {
       this.cleanUpNpcs();
     }, 1000);
+  }
+
+  private DrawGeneerationNumber() {
+    this.ctx!.font = "24px Arial";
+    this.ctx!.fillStyle = "black";
+    this.ctx!.textAlign = "center";
+    const x = 100;
+    const y = 30;
+
+    this.ctx!.fillText(`Generation: ${this.generation} `, x, y);
   }
 }

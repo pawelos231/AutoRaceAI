@@ -20,14 +20,6 @@ export class NeuralNetwork {
     return outputs;
   }
 
-  calculateFitness(expectedOutputs: number[], actualOutputs: number[]): void {
-    let sumSquaredError = 0;
-    for (let i = 0; i < expectedOutputs.length; i++) {
-      sumSquaredError += (expectedOutputs[i] - actualOutputs[i]) ** 2;
-    }
-    this.fitness = 1 / (1 + sumSquaredError);
-  }
-
   static mutate(network: NeuralNetwork, amount = 1) {
     network.levels.forEach((level: Level) => {
       for (let i = 0; i < level.biases.length; i++) {
