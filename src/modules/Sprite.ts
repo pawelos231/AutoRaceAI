@@ -25,8 +25,7 @@ class Sprite {
   }
 
   public update() {
-    // Implement sprite update logic here if needed.
-    // For example, you can change the sprite's position, animate it, etc.
+    
   }
 
   public getX(): number {

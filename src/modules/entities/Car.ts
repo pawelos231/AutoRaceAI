@@ -29,11 +29,13 @@ export class Car extends Common<false> implements CarType {
 
   // State
   damaged: boolean;
+  snapshotOfTraffic: number[];
   isDone: boolean;
   createdAt: number;
 
   // Destination
   destination: number;
+  obstaclesCrossed: number;
 
   // Lane information
   laneCount: number;
@@ -63,6 +65,7 @@ export class Car extends Common<false> implements CarType {
     this.width = width;
     this.height = height;
     this.speed = 0;
+    this.obstaclesCrossed = 0;
     this.acceleration = 0.2;
     this.maxSpeed = maxSpeed;
     this.friction = 0.05;
@@ -74,6 +77,7 @@ export class Car extends Common<false> implements CarType {
     this.getLaneCenter = getLaneCenter;
     this.laneCount = laneCount;
     this.createdAt = Date.now();
+    this.snapshotOfTraffic = [];
 
     this.useBrain = vehicleType == VehicleType.AI;
 
@@ -153,6 +157,7 @@ export class Car extends Common<false> implements CarType {
       const offsets = this.sensor.readings.map((reading) => {
         return reading == null ? 0 : 1 - reading.offset;
       });
+
       const outputs = NeuralNetwork.feedForward(offsets, this.brain!);
       if (this.useBrain) {
         this.controls.forward = Boolean(outputs[0]);
@@ -202,7 +207,27 @@ export class Car extends Common<false> implements CarType {
     return normalizedValue;
   }
 
-  public calculateFitness(): number | void {
+  private evaluateTrafficScore(trafficPosY: number[]): number {
+    const TRAFFIC_COUNT = 50; //for now
+    let sum = 0;
+    if (this.snapshotOfTraffic.length == 0) {
+      for (let i = 0; i < TRAFFIC_COUNT; i++) {
+        if (this.y < trafficPosY[i]) {
+          sum += 1;
+        }
+      }
+      return sum / TRAFFIC_COUNT;
+    } else {
+      for (let i = 0; i < TRAFFIC_COUNT; i++) {
+        if (this.y < this.snapshotOfTraffic[i]) {
+          sum += 1;
+        }
+      }
+      return sum / TRAFFIC_COUNT;
+    }
+  }
+
+  public calculateFitness(trafficPosY: number[]): number | void {
     if (this.carType !== VehicleType.AI) return;
     const FRAMES_PER_SEC = 165;
     let expectedTime = 10000 / (FRAMES_PER_SEC * this.maxSpeed);
@@ -226,15 +251,17 @@ export class Car extends Common<false> implements CarType {
       );
     }
 
-    const weight = 7;
+    const weightForTime = 5;
+    const weightForObstaclesCrossed = 10;
 
     const maxFitness = 1;
     const fitness =
-      (normalizedFinishTimeFitnessValue * weight +
+      (normalizedFinishTimeFitnessValue * weightForTime +
+        this.evaluateTrafficScore(trafficPosY) * weightForObstaclesCrossed +
         this.normalizeDistance() +
         bestDistanceFromCenter +
         this.speed / this.maxSpeed) /
-      (maxFitness * 10);
+      (maxFitness * 18);
     return Math.max(fitness, 0);
   }
 

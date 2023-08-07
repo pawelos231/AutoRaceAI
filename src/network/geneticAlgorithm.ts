@@ -16,13 +16,17 @@ function getMutationAmount(
     (1 + fitnessScale);
 
   const minMutationAmount = 0.01;
-  return Math.max(mutationAmount, minMutationAmount);
+  return Math.max(mutationAmount * 1.9, minMutationAmount);
 }
 
 export class GeneticAlgorithm {
-  static trainNeuralNetworks(cars: Car[], population: NeuralNetwork[]) {
+  static trainNeuralNetworks(
+    cars: Car[],
+    population: NeuralNetwork[],
+    traffic: number[]
+  ) {
     for (let i = 0; i < cars.length; i++) {
-      const fitness = cars[i].calculateFitness();
+      const fitness = cars[i].calculateFitness(traffic);
       cars[i].brain!.fitness = fitness || 0;
       population[i] = cars[i].brain!;
     }
@@ -50,8 +54,8 @@ export class GeneticAlgorithm {
       0.015,
       bestFit
     );
-
-    GeneticAlgorithm.mutate(newGeneration, mutation_amount * 1.5);
+    console.log("MUTATION AMOUNT:", mutation_amount);
+    GeneticAlgorithm.mutate(newGeneration, mutation_amount);
 
     return newGeneration;
   }
@@ -59,10 +63,10 @@ export class GeneticAlgorithm {
   private static selection(population: NeuralNetwork[]): NeuralNetwork[] {
     const sortedPopulation = population.sort((a, b) => b.fitness - a.fitness);
 
-    // Choose the top half neural networks as selectedNets
+    // Choose the top quarter neural networks as selectedNets
     const selectedNets = sortedPopulation.slice(
       0,
-      Math.ceil(sortedPopulation.length / 2)
+      Math.ceil(sortedPopulation.length / 4)
     );
 
     return selectedNets;
@@ -93,7 +97,7 @@ export class GeneticAlgorithm {
 
   private static mutate(population: NeuralNetwork[], mutation: number): void {
     for (const neuralNetwork of population) {
-      NeuralNetwork.mutate(neuralNetwork, DEFAULT_MUTATION_AMOUNT);
+      NeuralNetwork.mutate(neuralNetwork, mutation);
     }
   }
 

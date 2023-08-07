@@ -8,7 +8,7 @@ export const CAR_Y_POS = 250;
 
 //these values are for now only
 
-export const infinity = 10000000;
+export const infinity = 1000000;
 
 export const DEFAULT_LANE_COUNT = 3;
 export const DEFAULT_LINE_WIDTH = 5;
