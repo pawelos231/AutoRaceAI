@@ -62,7 +62,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       return car.y == Math.min(...this.cars.map((c) => c.y));
     })!;
 
-    if (this.bestCar.y < END_OF_MAP_TOP) {
+    if (this.bestCar.y < END_OF_MAP_TOP / 2) {
       GeneticAlgorithm.trainNeuralNetworks(
         this.cars,
         this.population,
@@ -116,7 +116,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       if (!this.cars[i].damaged) {
         this.cars[i].update(this.road.borders, this.traffic);
       }
-      if(this.cars[i].damaged && this.cars[i].snapshotOfTraffic.length == 0){
+      if (this.cars[i].damaged && this.cars[i].snapshotOfTraffic.length == 0) {
         this.cars[i].snapshotOfTraffic = this.traffic.map((car) => car.y);
       }
     }

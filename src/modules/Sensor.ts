@@ -6,7 +6,7 @@ import { getIntersection } from "../math/intersections";
 import { Reading } from "../types/SensorTypes";
 import { Positions } from "../types/CommonTypes";
 
-const DEFAULT_RAY_COUNT = 8;
+const DEFAULT_RAY_COUNT = 15;
 
 export class Sensor {
   rayCount: number;
@@ -18,7 +18,7 @@ export class Sensor {
   constructor(rayCount: number = DEFAULT_RAY_COUNT) {
     this.rayCount = rayCount;
     this.rayLength = 280;
-    this.raySpread = Math.PI / 2;
+    this.raySpread = Math.PI / 1.5;
     this.rays = [];
     this.readings = [];
   }

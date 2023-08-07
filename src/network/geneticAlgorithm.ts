@@ -16,7 +16,7 @@ function getMutationAmount(
     (1 + fitnessScale);
 
   const minMutationAmount = 0.01;
-  return Math.max(mutationAmount * 1.9, minMutationAmount);
+  return Math.max(mutationAmount * 1.4, minMutationAmount);
 }
 
 export class GeneticAlgorithm {
@@ -51,7 +51,7 @@ export class GeneticAlgorithm {
     const mutation_amount = getMutationAmount(
       generation,
       DEFAULT_MUTATION_AMOUNT,
-      0.015,
+      0.01,
       bestFit
     );
     console.log("MUTATION AMOUNT:", mutation_amount);
@@ -78,7 +78,7 @@ export class GeneticAlgorithm {
     raycount: number
   ): NeuralNetwork {
     // Perform single-point crossover
-    const child = new NeuralNetwork([raycount, 10, 10, 10, 10]);
+    const child = new NeuralNetwork([raycount, 7, 4]);
 
     const crossoverPoint = Math.floor(Math.random() * parent1.levels!.length);
 
