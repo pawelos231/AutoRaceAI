@@ -13,5 +13,5 @@ export const infinity = 1000000;
 export const DEFAULT_LANE_COUNT = 3;
 export const DEFAULT_LINE_WIDTH = 5;
 
-export const END_OF_MAP_TOP = -10000;
+export const END_OF_MAP_TOP = -20000;
 export const END_OF_MAP_BOTTOM = 1000;

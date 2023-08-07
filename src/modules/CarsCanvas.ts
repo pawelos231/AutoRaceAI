@@ -20,8 +20,15 @@ import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetwor
 import { END_OF_MAP_TOP } from "../constants/DefaultValues/EntitiesDimmensions";
 import { TRAFFIC_MOCK_DATA } from "../data/traffic";
 
+const POPULATION_LOCAL_STORAGE_KEY = "population";
+
+type PopulationLocalStorageType = {
+  generation: number;
+  population: NeuralNetwork[];
+};
+
 const ROAD_WIDTH_MULTIPLIER = 0.9;
-const CARS_TO_TRAIN_COUNT = 300;
+const CARS_TO_TRAIN_COUNT = 250;
 
 export class CarCanvas extends Common<false> implements TCanvas {
   private canvas: HTMLCanvasElement;
@@ -45,10 +52,19 @@ export class CarCanvas extends Common<false> implements TCanvas {
       this.canvas?.width! / 2,
       this.canvas?.width! * ROAD_WIDTH_MULTIPLIER
     );
+    this.generation = 0;
+
+    const pop = localStorage.getItem(POPULATION_LOCAL_STORAGE_KEY);
+    if (pop) {
+      const item = JSON.parse(pop) as PopulationLocalStorageType;
+      console.log(item);
+      this.population = item.population;
+      this.generation = item.generation;
+    }
+
     this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
 
     this.traffic = this.generateMockTrafficNonRandom();
-    this.generation = 0;
   }
 
   public initCanvas(): void {
@@ -62,7 +78,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       return car.y == Math.min(...this.cars.map((c) => c.y));
     })!;
 
-    if (this.bestCar.y < END_OF_MAP_TOP / 2) {
+    if (this.bestCar.y < END_OF_MAP_TOP) {
       GeneticAlgorithm.trainNeuralNetworks(
         this.cars,
         this.population,
@@ -163,7 +179,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
         CAR_WIDTH,
         CAR_HEIGHT,
         VehicleType.AI,
-        VehicleSpeed.AVERAGE,
+        VehicleSpeed.FAST,
         this.road.getLaneCenter.bind(this.road),
         this.road.laneCount
       );
@@ -171,25 +187,28 @@ export class CarCanvas extends Common<false> implements TCanvas {
       if (this.population.length == 0) {
         population.push(JSON.parse(JSON.stringify(car.brain!)));
         if (localStorage.getItem(BEST_CAR_LOCAL)) {
-          if (i < 5) {
-            car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
-          } else {
+          car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!);
+          if (i > 15) {
             NeuralNetwork.mutate(car.brain!, DEFAULT_MUTATION_AMOUNT);
           }
         }
       } else {
         if (localStorage.getItem(BEST_CAR_LOCAL)) {
-          if (i < 5) {
+          if (i < 15) {
             car.brain = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!)!;
-            this.population[i - 1] = car.brain!;
           } else {
-            car.brain = JSON.parse(JSON.stringify(this.population[i - 1]));
+            car.brain = JSON.parse(JSON.stringify(this.population[i - 15]));
           }
         }
       }
     }
+
     if (this.population.length == 0) {
       this.population = population;
+    } else {
+      for (let i = 15; i < 30; i++) {
+        this.population[i] = JSON.parse(localStorage.getItem(BEST_CAR_LOCAL)!)!;
+      }
     }
 
     return cars;
@@ -198,11 +217,36 @@ export class CarCanvas extends Common<false> implements TCanvas {
   private saveBestCarToStorage() {
     localStorage.setItem(BEST_CAR_LOCAL, JSON.stringify(this.bestCar!.brain));
   }
+  private savePopulation() {
+    const popToSave: PopulationLocalStorageType = {
+      population: this.population,
+      generation: this.generation,
+    };
+
+    localStorage.setItem(
+      POPULATION_LOCAL_STORAGE_KEY,
+      JSON.stringify(popToSave)
+    );
+  }
+  private deleteSavedPop() {
+    localStorage.removeItem(POPULATION_LOCAL_STORAGE_KEY);
+  }
 
   private save() {
     let save = this.bindElementByClass("save");
+    let savePop = this.bindElementByClass("population");
+    let discardPop = this.bindElementByClass("dicardPopulation");
+
     save.addEventListener("click", () => {
       this.saveBestCarToStorage();
+    });
+
+    savePop.addEventListener("click", () => {
+      this.savePopulation();
+    });
+
+    discardPop.addEventListener("click", () => {
+      this.deleteSavedPop();
     });
   }
 

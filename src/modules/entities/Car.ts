@@ -230,10 +230,12 @@ export class Car extends Common<false> implements CarType {
   public calculateFitness(trafficPosY: number[]): number | void {
     if (this.carType !== VehicleType.AI) return;
     const FRAMES_PER_SEC = 120;
-    let expectedTime = 10000 / (FRAMES_PER_SEC * this.maxSpeed);
+    let expectedTime =
+      Math.abs(END_OF_MAP_TOP) / (FRAMES_PER_SEC * this.maxSpeed);
     if (this.damaged) {
       expectedTime =
-        (10000 / (FRAMES_PER_SEC * this.maxSpeed)) * this.normalizeDistance();
+        (Math.abs(END_OF_MAP_TOP) / (FRAMES_PER_SEC * this.maxSpeed)) *
+        this.normalizeDistance();
     }
     const finishTime = Date.now() - this.createdAt;
     const normalizedFinishTimeFitnessValue = expectedTime / (finishTime / 1000);
@@ -252,7 +254,7 @@ export class Car extends Common<false> implements CarType {
     }
 
     const weightForTime = 5;
-    const weightForObstaclesCrossed = 20;
+    const weightForObstaclesCrossed = 30;
 
     const maxFitness = 1;
     const fitness =
@@ -261,7 +263,7 @@ export class Car extends Common<false> implements CarType {
         this.normalizeDistance() +
         bestDistanceFromCenter +
         this.speed / this.maxSpeed) /
-      (maxFitness * 28);
+      (maxFitness * 38);
     return Math.max(fitness, 0);
   }
 

@@ -8,15 +8,13 @@ function getMutationAmount(
   decayRate: number,
   bestFitness: number
 ): number {
-  const fitnessScale = 1 - bestFitness;
-
   const mutationAmount =
     initialMutationAmount /
     (1 + decayRate * currentGeneration) /
-    (1 + fitnessScale);
+    (1 + bestFitness);
 
   const minMutationAmount = 0.01;
-  return Math.max(mutationAmount * 1.4, minMutationAmount);
+  return Math.max(mutationAmount, minMutationAmount);
 }
 
 export class GeneticAlgorithm {
@@ -51,7 +49,7 @@ export class GeneticAlgorithm {
     const mutation_amount = getMutationAmount(
       generation,
       DEFAULT_MUTATION_AMOUNT,
-      0.01,
+      0.023,
       bestFit
     );
     console.log("MUTATION AMOUNT:", mutation_amount);
@@ -66,7 +64,7 @@ export class GeneticAlgorithm {
     // Choose the top quarter neural networks as selectedNets
     const selectedNets = sortedPopulation.slice(
       0,
-      Math.ceil(sortedPopulation.length / 4)
+      Math.ceil(sortedPopulation.length / 10)
     );
 
     return selectedNets;
