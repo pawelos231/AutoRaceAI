@@ -216,6 +216,7 @@ export class Car extends Common<false> implements CarType {
           sum += 1;
         }
       }
+
       return sum / TRAFFIC_COUNT;
     } else {
       for (let i = 0; i < TRAFFIC_COUNT; i++) {
@@ -257,9 +258,10 @@ export class Car extends Common<false> implements CarType {
     const weightForObstaclesCrossed = 30;
 
     const maxFitness = 1;
+    const trafficScore = this.evaluateTrafficScore(trafficPosY);
     const fitness =
       (normalizedFinishTimeFitnessValue * weightForTime +
-        this.evaluateTrafficScore(trafficPosY) * weightForObstaclesCrossed +
+        trafficScore * weightForObstaclesCrossed +
         this.normalizeDistance() +
         bestDistanceFromCenter +
         this.speed / this.maxSpeed) /

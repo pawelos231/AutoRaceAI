@@ -49,7 +49,7 @@ export class GeneticAlgorithm {
     const mutation_amount = getMutationAmount(
       generation,
       DEFAULT_MUTATION_AMOUNT,
-      0.023,
+      0.016,
       bestFit
     );
     console.log("MUTATION AMOUNT:", mutation_amount);

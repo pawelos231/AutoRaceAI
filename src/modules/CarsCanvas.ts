@@ -307,7 +307,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
   public cleanUpOfCars() {
     setInterval(() => {
-      this.cleanUpNpcs();
+      //this.cleanUpNpcs();
     }, 1000);
   }
 
