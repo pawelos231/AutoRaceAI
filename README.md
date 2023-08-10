@@ -9,7 +9,7 @@ Welcome to the **Auto Race AI** project repository! This project provides an int
 
 ## Introduction
 
-The **Auto Race AI** project provides an immersive experience into the world of machine learning and artificial intelligence through an engaging car racing simulation. By adopting TypeScript and without usage of external libraries, we aim to facilitate a comprehensive understanding of the intricate mechanisms behind neural networks and genetic algorithms.
+The **Auto Race AI** project provides an immersive experience into the world of machine learning and artificial intelligence through an engaging car racing simulation. By adopting TypeScript and without usage of external libraries, I aim to facilitate a comprehensive understanding of the intricate mechanisms behind neural networks and genetic algorithms.
 
 ## Neural Network Architecture
 
@@ -17,15 +17,15 @@ At the core of this project lies a sophisticated neural network architecture. Ea
 
 ## Genetic Algorithm
 
-Our genetic algorithm drives the training process, enabling cars to continually enhance their performance across generations. This mechanism incorporates single-point crossover, mutation, and selection strategies, mirroring nature's process of evolution.
+Genetic algorithm drives the training process, enabling cars to continually enhance their performance across generations. This mechanism incorporates single-point crossover, mutation, and selection strategies, mirroring nature's process of evolution.
 
 ## Fitness Calculation
 
-A holistic approach to fitness evaluation underpins the progress of each car. The fitness score is meticulously calculated based on four essential factors: the number of crossed obstacles, distance from the center line, car speed, and total distance traveled.
+A holistic approach to fitness evaluation underpins the progress of each car. The fitness score is calculated based on four essential factors: the number of crossed obstacles, distance from the center line, car speed, and total distance traveled.
 
 ## Simulation Details
 
-A meticulous simulation process unfolds with each generation. A group of 250 cars, each equipped with its neural network, is introduced per generation. Progress to the subsequent generation is initiated upon the achievement of a predefined threshold (e.g., -20000) by the best-performing car. The racetrack layout, including approximately 50 randomly positioned cars, is defined in the `data/traffic.ts` file.
+A simulation process unfolds with each generation. A group of 250 cars, each equipped with its neural network, is introduced per generation. Progress to the subsequent generation is initiated upon the achievement of a predefined threshold (e.g., -20000) by the best-performing car. The racetrack layout, including 50 randomly positioned cars, is defined in the `data/traffic.ts` file.
 
 ## Adjustable Parameters
 
