@@ -61,6 +61,7 @@ tsc -w
 
 here is a video of a nicely trained cars:
 
-https://github.com/pawelos231/AutoRaceAI/assets/93586648/39060de4-8763-4d71-9e5d-2708d4c62c6a
+https://github.com/pawelos231/AutoRaceAI/assets/93586648/e6b998fd-5840-4fe3-b90e-c511a10c22ca
+
 
 
