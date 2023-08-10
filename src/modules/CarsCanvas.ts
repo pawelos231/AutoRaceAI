@@ -19,6 +19,7 @@ import { GeneticAlgorithm } from "../network/geneticAlgorithm";
 import { DEFAULT_MUTATION_AMOUNT } from "../constants/DefaultValues/neuralNetworkConsts";
 import { END_OF_MAP_TOP } from "../constants/DefaultValues/EntitiesDimmensions";
 import { TRAFFIC_MOCK_DATA } from "../data/traffic";
+import { Logger } from "../types/CommonTypes";
 
 const POPULATION_LOCAL_STORAGE_KEY = "population";
 
@@ -57,7 +58,27 @@ export class CarCanvas extends Common<false> implements TCanvas {
     const pop = localStorage.getItem(POPULATION_LOCAL_STORAGE_KEY);
     if (pop) {
       const item = JSON.parse(pop) as PopulationLocalStorageType;
-      this.population = item.population;
+      if (CARS_TO_TRAIN_COUNT > item.population.length) {
+        let count = 0;
+        for (let i = 0; i < CARS_TO_TRAIN_COUNT; i++) {
+          count++;
+          if (count >= item.population.length - 1) {
+            count = 0;
+          }
+          console.log(count);
+          this.population[i] = JSON.parse(
+            JSON.stringify(item.population[count])
+          );
+        }
+      } else if (CARS_TO_TRAIN_COUNT < item.population.length) {
+        const ws = item.population.length / CARS_TO_TRAIN_COUNT;
+        const selectedNets = item.population.slice(
+          0,
+          Math.ceil(item.population.length / ws)
+        );
+      } else {
+        this.population = item.population;
+      }
       this.generation = item.generation;
     }
 
@@ -238,14 +259,23 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
     save.addEventListener("click", () => {
       this.saveBestCarToStorage();
+      this.displayMessageAtTheTopOfTheScreen("SAVED CAR", Logger.Message);
     });
 
     savePop.addEventListener("click", () => {
+      this.displayMessageAtTheTopOfTheScreen(
+        "SAVED POPULATION",
+        Logger.Message
+      );
       this.savePopulation();
     });
 
     discardPop.addEventListener("click", () => {
       this.deleteSavedPop();
+      this.displayMessageAtTheTopOfTheScreen(
+        "DISCARDED POPULATION",
+        Logger.Message
+      );
     });
   }
 

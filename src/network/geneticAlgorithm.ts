@@ -64,7 +64,7 @@ export class GeneticAlgorithm {
     // Choose the top quarter neural networks as selectedNets
     const selectedNets = sortedPopulation.slice(
       0,
-      Math.ceil(sortedPopulation.length / 10)
+      Math.ceil(sortedPopulation.length / 8)
     );
 
     return selectedNets;
