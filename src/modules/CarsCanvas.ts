@@ -57,7 +57,6 @@ export class CarCanvas extends Common<false> implements TCanvas {
     const pop = localStorage.getItem(POPULATION_LOCAL_STORAGE_KEY);
     if (pop) {
       const item = JSON.parse(pop) as PopulationLocalStorageType;
-      console.log(item);
       this.population = item.population;
       this.generation = item.generation;
     }
