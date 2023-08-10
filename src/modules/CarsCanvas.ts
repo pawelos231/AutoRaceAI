@@ -72,10 +72,11 @@ export class CarCanvas extends Common<false> implements TCanvas {
         }
       } else if (CARS_TO_TRAIN_COUNT < item.population.length) {
         const ws = item.population.length / CARS_TO_TRAIN_COUNT;
-        const selectedNets = item.population.slice(
+        const selected = item.population.slice(
           0,
-          Math.ceil(item.population.length / ws)
+          Math.floor(item.population.length / ws)
         );
+        this.population = selected;
       } else {
         this.population = item.population;
       }
@@ -305,7 +306,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
       traffic.push(
         new Car(
           this.road.getLaneCenter(getRandomValueBetweenNums(0, 3)),
-          -(i * 180) - 300,
+          -(i * 170) - 300,
           getRandomValueBetweenNums(30, 40),
           getRandomValueBetweenNums(60, 70),
           VehicleType.NPC,
