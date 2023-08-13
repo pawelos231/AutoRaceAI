@@ -85,7 +85,7 @@ export class CarCanvas extends Common<false> implements TCanvas {
 
     this.cars = this.generateCars(CARS_TO_TRAIN_COUNT);
 
-    this.traffic = this.generateMockTrafficNonRandom();
+    this.traffic = this.generateRandomTraffic(50);
   }
 
   public initCanvas(): void {
