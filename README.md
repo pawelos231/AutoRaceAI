@@ -41,8 +41,6 @@ In the future i plan to add on these new features to expand on the ones i alread
 
 - Diverse Training Environments
 
-- Improved User Interface
-
 - Playable Mode: Enable users to test their skills by racing against the trained AI model.
 
 - Advanced Obstacles: Incorporate curved paths and stationary obstacles to simulate real-world driving challenges
