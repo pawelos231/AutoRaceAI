@@ -1,0 +1,61 @@
+body {
+  background-color: #f0f0f0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  overflow: hidden;
+}
+
+#carCanvas {
+  background-color: #333;
+  border-radius: 8px;
+  margin-top: 0;
+  box-shadow: 0 0 10px #00000080;
+}
+
+.buttons {
+  gap: 10px;
+  margin-top: 20px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 20px;
+}
+
+.buttons button {
+  color: #fff;
+  cursor: pointer;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: background-color .3s;
+}
+
+.buttons button:hover {
+  background-color: #0056b3;
+}
+
+.MESSAGE {
+  color: #fff;
+  background-color: #000000b3;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 24px;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/*# sourceMappingURL=index.3a01df49.css.map */
